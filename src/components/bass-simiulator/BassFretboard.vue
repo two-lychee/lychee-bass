@@ -215,5 +215,6 @@ const unlockAudio = async () => {
   color: #fff;
   border: none;
   cursor: pointer;
+  height: 30px;
 }
 </style>
