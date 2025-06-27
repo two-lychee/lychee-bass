@@ -25,7 +25,7 @@
     </g>
 
     <!-- 品格数字 -->
-    <g v-for="fret in fretCount" :key="`label-${fret}`" v-if="fret > 0">
+    <g v-for="fret in displayFrets" :key="`label-${fret}`">
       <text
         :x="svgWidth - 10"
         :y="fret * fretHeight - 10"
@@ -68,7 +68,7 @@
         />
         <text
           v-if="showNoteNames"
-          :x="x+15"
+          :x="x - 15"
           :y="(fret - 0.5) * fretHeight"
           font-size="15"
           fill="#ffecb3"
@@ -101,7 +101,9 @@ const svgHeight = fretCount * fretHeight
 const stringPositions = computed(() =>
   Array.from({ length: stringCount }, (_, i) => (i + 1) * stringSpacing - stringSpacing / 2)
 )
-
+const displayFrets = computed(() =>
+  Array.from({ length: fretCount }, (_, i) => i + 1) // 1 到 fretCount
+)
 // 弦由粗到细，左到右对应音高 E0, A0, D1, G1
 const openNotes = ['E3', 'A3', 'D4', 'G4']
 
