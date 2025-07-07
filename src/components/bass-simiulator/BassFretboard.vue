@@ -105,7 +105,7 @@ const displayFrets = computed(() =>
   Array.from({ length: fretCount }, (_, i) => i + 1) // 1 到 fretCount
 )
 // 弦由粗到细，左到右对应音高 E0, A0, D1, G1
-const openNotes = ['E4', 'A3', 'D4', 'G4']
+const openNotes = ['E4', 'A4', 'D4', 'G4']
 
 const stringThickness = [6, 5, 4, 3] // 粗到细弦线宽
 const dotFrets = [3, 5, 7, 9, 12]
