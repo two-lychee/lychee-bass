@@ -131,7 +131,7 @@
 .theory-page {
   max-width: 900px;
   margin: 0 auto;
-  color: #eee;
+  color: #333;
 }
 
 .page-header {
@@ -145,7 +145,7 @@
 
 .subtitle {
   margin: 0;
-  color: #aaa;
+  color: #666;
   font-size: 14px;
 }
 
@@ -162,27 +162,28 @@
 .section h3 {
   margin: 20px 0 8px;
   font-size: 16px;
-  color: #ffecb3;
+  color: #333;
 }
 
 .section p {
   margin: 0 0 12px;
   line-height: 1.6;
-  color: #ccc;
+  color: #666;
   font-size: 14px;
 }
 
 .section strong {
-  color: #ffecb3;
+  color: #333;
 }
 
 .section code {
-  background: #2c2424;
+  background: #f5f5f5;
   padding: 2px 6px;
   border-radius: 3px;
   font-family: monospace;
   color: #ff8a65;
   font-size: 13px;
+  border: 1px solid #e0e0e0;
 }
 
 .tuning-box {
@@ -197,15 +198,16 @@
   flex-direction: column;
   gap: 4px;
   padding: 12px;
-  background: #2c2424;
-  border: 1px solid #3a3030;
+  background: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
   text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .string-num {
   font-size: 12px;
-  color: #888;
+  color: #999;
 }
 
 .note {
@@ -216,12 +218,12 @@
 
 .freq {
   font-size: 11px;
-  color: #aaa;
+  color: #999;
 }
 
 .note-text {
   font-size: 13px;
-  color: #aaa;
+  color: #999;
   font-style: italic;
 }
 
@@ -234,12 +236,12 @@
 
 .note-chip {
   padding: 8px;
-  background: #2c2424;
-  border: 1px solid #3a3030;
+  background: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
   text-align: center;
   font-weight: 500;
-  color: #ffecb3;
+  color: #333;
   font-size: 14px;
 }
 
@@ -247,7 +249,7 @@
   margin: 12px 0;
   padding-left: 20px;
   line-height: 1.8;
-  color: #ccc;
+  color: #666;
   font-size: 14px;
 }
 
@@ -257,12 +259,13 @@
 
 .example {
   padding: 10px 14px;
-  background: #2c2424;
+  background: #fff;
   border-left: 3px solid #ff8a65;
   border-radius: 4px;
   font-family: monospace;
-  color: #ffecb3;
+  color: #333;
   font-size: 13px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .interval-table {
@@ -273,29 +276,31 @@
 }
 
 .interval-table th {
-  background: #2c2424;
+  background: #f5f5f5;
   padding: 10px;
   text-align: left;
   color: #ff8a65;
-  border: 1px solid #3a3030;
+  border: 1px solid #e0e0e0;
+  font-weight: 600;
 }
 
 .interval-table td {
   padding: 8px 10px;
-  border: 1px solid #3a3030;
-  color: #ccc;
+  border: 1px solid #e0e0e0;
+  color: #666;
 }
 
 .interval-table tbody tr:nth-child(even) {
-  background: #2c2424;
+  background: #fafafa;
 }
 
 .tip {
   margin-top: 40px;
   padding: 20px;
-  background: #2c2424;
-  border: 1px solid #3a3030;
+  background: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .tip strong {
@@ -309,7 +314,7 @@
   margin: 0;
   padding-left: 20px;
   line-height: 1.8;
-  color: #ccc;
+  color: #666;
   font-size: 14px;
 }
 

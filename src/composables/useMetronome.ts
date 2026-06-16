@@ -8,6 +8,8 @@ export interface MetronomeOptions {
   beatsPerBar?: number
   subdivision?: number
   volume?: number
+  accentPattern?: number[]
+  rhythmPattern?: 'straight' | 'offbeat' | 'syncopated'
 }
 
 export const useMetronome = (options: MetronomeOptions = {}) => {
@@ -15,6 +17,8 @@ export const useMetronome = (options: MetronomeOptions = {}) => {
   const beatsPerBar = ref(options.beatsPerBar ?? 4)
   const subdivision = ref(options.subdivision ?? 1)
   const volume = ref(options.volume ?? -10)
+  const accentPattern = ref(options.accentPattern ?? [1])
+  const rhythmPattern = ref<'straight' | 'offbeat' | 'syncopated'>(options.rhythmPattern ?? 'straight')
   const isPlaying = ref(false)
   const currentBeat = ref(0)
 
@@ -42,12 +46,26 @@ export const useMetronome = (options: MetronomeOptions = {}) => {
     let beatCounter = 0
 
     loop = new Tone.Loop((time) => {
-      const isDownbeat = beatCounter % subdivision.value === 0
-      currentBeat.value = Math.floor(beatCounter / subdivision.value) % beatsPerBar.value
+      const beat = Math.floor(beatCounter / subdivision.value) % beatsPerBar.value
+      const subBeat = beatCounter % subdivision.value
+      currentBeat.value = beat
 
-      if (synth) {
-        synth.volume.value = volume.value + (isDownbeat ? 6 : 0)
-        synth.triggerAttackRelease(isDownbeat ? 'C5' : 'C4', '16n', time)
+      let shouldPlay = false
+      let isAccent = false
+
+      // 根据节奏型决定是否播放
+      if (rhythmPattern.value === 'straight') {
+        shouldPlay = subBeat === 0
+      } else if (rhythmPattern.value === 'offbeat') {
+        shouldPlay = subBeat === Math.floor(subdivision.value / 2)
+      } else if (rhythmPattern.value === 'syncopated') {
+        shouldPlay = subBeat === 0 || (beat % 2 === 1 && subBeat === Math.floor(subdivision.value / 2))
+      }
+
+      if (shouldPlay && synth) {
+        isAccent = accentPattern.value.includes(beat + 1)
+        synth.volume.value = volume.value + (isAccent ? 6 : 0)
+        synth.triggerAttackRelease(isAccent ? 'C5' : 'C4', '16n', time)
       }
 
       beatCounter++
@@ -81,7 +99,7 @@ export const useMetronome = (options: MetronomeOptions = {}) => {
     if (synth) synth.volume.value = newVol
   })
 
-  watch([beatsPerBar, subdivision], () => {
+  watch([beatsPerBar, subdivision, rhythmPattern, accentPattern], () => {
     if (isPlaying.value) {
       stop()
       start()
@@ -101,6 +119,8 @@ export const useMetronome = (options: MetronomeOptions = {}) => {
     beatsPerBar,
     subdivision,
     volume,
+    accentPattern,
+    rhythmPattern,
     isPlaying,
     currentBeat,
     start,

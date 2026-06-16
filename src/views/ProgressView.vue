@@ -64,7 +64,7 @@ const avgMinutes = computed(() =>
 
 <style scoped>
 .progress-page {
-  color: #eee;
+  color: #333;
 }
 
 .page-header {
@@ -78,7 +78,7 @@ const avgMinutes = computed(() =>
 
 .subtitle {
   margin: 0;
-  color: #aaa;
+  color: #666;
   font-size: 14px;
 }
 
@@ -90,11 +90,12 @@ const avgMinutes = computed(() =>
 }
 
 .stat-card {
-  background: #2c2424;
+  background: #fff;
   padding: 20px;
   border-radius: 8px;
-  border: 1px solid #3a3030;
+  border: 1px solid #e0e0e0;
   text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .stat-value {
@@ -106,7 +107,7 @@ const avgMinutes = computed(() =>
 
 .stat-label {
   font-size: 13px;
-  color: #aaa;
+  color: #666;
 }
 
 .records-section h2 {
@@ -124,20 +125,20 @@ const avgMinutes = computed(() =>
   display: flex;
   gap: 16px;
   padding: 12px 16px;
-  background: #2c2424;
+  background: #fff;
   border-radius: 6px;
-  border: 1px solid #3a3030;
+  border: 1px solid #e0e0e0;
   font-size: 14px;
 }
 
 .record-date {
-  color: #aaa;
+  color: #999;
   flex: 0 0 100px;
 }
 
 .record-activity {
   flex: 1;
-  color: #ffecb3;
+  color: #333;
 }
 
 .record-duration {
@@ -148,20 +149,21 @@ const avgMinutes = computed(() =>
 .empty {
   padding: 40px;
   text-align: center;
-  color: #888;
-  background: #2c2424;
+  color: #999;
+  background: #fff;
   border-radius: 8px;
-  border: 1px dashed #3a3030;
+  border: 1px dashed #e0e0e0;
 }
 
 .tip {
   margin-top: 32px;
   padding: 12px 16px;
-  background: #2c2424;
+  background: #fff;
   border-left: 3px solid #ff8a65;
   border-radius: 4px;
   font-size: 13px;
-  color: #ccc;
+  color: #666;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .tip strong {

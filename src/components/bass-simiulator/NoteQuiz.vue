@@ -164,7 +164,7 @@ onMounted(next)
   display: flex;
   flex-direction: column;
   gap: 14px;
-  color: #eee;
+  color: #333;
 }
 
 .header h2 {
@@ -174,11 +174,11 @@ onMounted(next)
 .hint {
   margin: 0;
   font-size: 13px;
-  color: #ccc;
+  color: #666;
 }
 
 .muted {
-  color: #888;
+  color: #999;
 }
 
 .stats {
@@ -186,10 +186,11 @@ onMounted(next)
   flex-wrap: wrap;
   gap: 12px;
   font-size: 13px;
-  color: #ddd;
+  color: #666;
   padding: 8px 12px;
-  background: #2c2424;
+  background: #fff;
   border-radius: 6px;
+  border: 1px solid #e0e0e0;
 }
 
 .options {
@@ -202,26 +203,27 @@ onMounted(next)
   padding: 12px;
   font-size: 16px;
   border-radius: 6px;
-  border: 1px solid #555;
-  background: #3b2f2f;
-  color: #ffecb3;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #333;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .option:hover:not(:disabled) {
-  background: #4a3a3a;
+  background: #f5f5f5;
+  border-color: #ccc;
 }
 
 .option.correct {
   background: #81c784;
-  color: #1b5e20;
+  color: #fff;
   border-color: #81c784;
 }
 
 .option.wrong {
   background: #e57373;
-  color: #4a0e0e;
+  color: #fff;
   border-color: #e57373;
 }
 
@@ -236,11 +238,11 @@ onMounted(next)
 .feedback {
   min-height: 22px;
   font-size: 14px;
-  color: #aaa;
+  color: #999;
 }
 
 .feedback.correct {
-  color: #81c784;
+  color: #66bb6a;
 }
 
 .feedback.wrong {
@@ -252,7 +254,7 @@ onMounted(next)
   gap: 8px;
 }
 
-.primary,
+
 .ghost {
   padding: 8px 16px;
   border-radius: 4px;
@@ -267,13 +269,13 @@ onMounted(next)
 }
 
 .primary:disabled {
-  background: #555;
+  background: #ccc;
   cursor: not-allowed;
 }
 
 .ghost {
   background: transparent;
-  color: #ccc;
-  border: 1px solid #555;
+  color: #666;
+  border: 1px solid #e0e0e0;
 }
 </style>

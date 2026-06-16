@@ -1,159 +1,255 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import BassFretboard from '@/components/bass-simiulator/BassFretboard.vue'
 import Metronome from '@/components/bass-simiulator/Metronome.vue'
-import { TUNINGS, type Tuning } from '@/components/bass-simiulator/tunings'
+import FingerExercise from '@/components/bass-simiulator/FingerExercise.vue'
+import ExerciseSettings, { type ExerciseConfig } from '@/components/bass-simiulator/ExerciseSettings.vue'
+import AppModal from '@/components/common/AppModal.vue'
 
-const selectedTuning = ref<Tuning>(TUNINGS.standard4)
-const showNoteNames = ref(false)
+const mode = ref<'metronome' | 'exercise'>('metronome')
+const showMetronomeSettings = ref(false)
+const showExerciseSettings = ref(false)
+const isRunning = ref(false)
+
+const fingerExerciseRef = ref<InstanceType<typeof FingerExercise>>()
+const metronomeRef = ref<InstanceType<typeof Metronome>>()
+const hiddenMetronomeRef = ref<InstanceType<typeof Metronome>>()
+
+const exerciseConfig = ref<ExerciseConfig>({
+  patternIndex: 0,
+  startString: 0,
+  startFret: 0,
+  repeatAcrossStrings: false,
+  fretIncrement: 1,
+  showNoteName: true,
+})
+
+const onBeat = () => {
+  if (mode.value === 'exercise' && isRunning.value && fingerExerciseRef.value) {
+    fingerExerciseRef.value.nextStep()
+  }
+}
+
+const startPractice = () => {
+  if (mode.value === 'exercise' && fingerExerciseRef.value && hiddenMetronomeRef.value) {
+    fingerExerciseRef.value.reset()
+    hiddenMetronomeRef.value.start()
+  }
+  isRunning.value = true
+}
+
+const stopPractice = () => {
+  if (hiddenMetronomeRef.value) {
+    hiddenMetronomeRef.value.stop()
+  }
+  isRunning.value = false
+  if (fingerExerciseRef.value) {
+    fingerExerciseRef.value.reset()
+  }
+}
+
+const updateExerciseConfig = (config: ExerciseConfig) => {
+  exerciseConfig.value = config
+}
 </script>
 
 <template>
   <div class="practice-page">
-    <div class="sidebar">
-      <section class="panel">
-        <h3>指板配置</h3>
+    <div class="toolbar">
+      <div class="mode-switch">
+        <button
+          class="mode-btn"
+          :class="{ active: mode === 'metronome' }"
+          :disabled="isRunning"
+          @click="mode = 'metronome'"
+        >
+          节拍器
+        </button>
+        <button
+          class="mode-btn"
+          :class="{ active: mode === 'exercise' }"
+          :disabled="isRunning"
+          @click="mode = 'exercise'"
+        >
+          爬格子训练
+        </button>
+      </div>
 
-        <div class="control">
-          <label>调弦</label>
-          <select v-model="selectedTuning" class="select">
-            <option v-for="t in TUNINGS" :key="t.id" :value="t">
-              {{ t.name }}
-            </option>
-          </select>
-          <p class="desc">{{ selectedTuning.description }}</p>
-          <div class="tuning-notes">
-            <span v-for="(note, i) in selectedTuning.notes" :key="i" class="note-badge">
-              {{ note }}
-            </span>
-          </div>
-        </div>
-
-        <div class="control">
-          <label class="checkbox">
-            <input v-model="showNoteNames" type="checkbox" />
-            显示音名
-          </label>
-        </div>
-      </section>
-
-      <Metronome />
+      <div v-if="mode === 'exercise'" class="controls">
+        <button
+          class="settings-btn"
+          :disabled="isRunning"
+          @click="showExerciseSettings = true"
+        >
+          ⚙️ 爬格子设置
+        </button>
+        <button
+          class="settings-btn"
+          :disabled="isRunning"
+          @click="showMetronomeSettings = true"
+        >
+          🥁 节拍器设置
+        </button>
+        <button
+          v-if="!isRunning"
+          class="action-btn start"
+          @click="startPractice"
+        >
+          ▶ 开始
+        </button>
+        <button
+          v-else
+          class="action-btn stop"
+          @click="stopPractice"
+        >
+          ⏸ 停止
+        </button>
+      </div>
     </div>
 
-    <div class="main-area">
-      <BassFretboard
-        :tuning="selectedTuning.notes"
-        :initial-show-note-names="showNoteNames"
-        :show-toggle="false"
-      />
+    <div class="main-content">
+      <Metronome v-if="mode === 'metronome'" ref="metronomeRef" />
+      <FingerExercise v-else ref="fingerExerciseRef" :config="exerciseConfig" />
+      <Metronome v-if="mode === 'exercise'" ref="hiddenMetronomeRef" hide-controls style="display: none" @beat="onBeat" />
     </div>
+
+    <AppModal :show="showMetronomeSettings" title="节拍器设置" @close="showMetronomeSettings = false">
+      <Metronome hide-controls />
+    </AppModal>
+
+    <AppModal :show="showExerciseSettings" title="爬格子设置" @close="showExerciseSettings = false">
+      <ExerciseSettings :config="exerciseConfig" @update="updateExerciseConfig" />
+    </AppModal>
   </div>
 </template>
 
 <style scoped>
 .practice-page {
   display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
-
-.sidebar {
-  flex: 0 0 300px;
-  display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-.main-area {
-  flex: 1;
-  min-width: 300px;
+.toolbar {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.panel {
-  background: #2c2424;
-  border: 1px solid #3a3030;
+.mode-switch {
+  display: flex;
+  gap: 4px;
+  background: #fff;
+  padding: 4px;
   border-radius: 8px;
-  padding: 20px;
-  color: #eee;
+  border: 1px solid #e0e0e0;
 }
 
-.panel h3 {
-  margin: 0 0 16px;
-  font-size: 18px;
-}
-
-.control {
-  margin-bottom: 16px;
-}
-
-.control:last-child {
-  margin-bottom: 0;
-}
-
-.control label {
-  display: block;
-  font-size: 13px;
-  color: #aaa;
-  margin-bottom: 8px;
-}
-
-.select {
-  width: 100%;
-  padding: 8px 12px;
-  background: #1a1515;
-  border: 1px solid #3a3030;
-  border-radius: 4px;
-  color: #eee;
+.mode-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #666;
   font-size: 14px;
   cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
-.desc {
-  margin: 8px 0 0;
-  font-size: 12px;
-  color: #888;
+.mode-btn:hover {
+  background: #f5f5f5;
 }
 
-.tuning-notes {
+.mode-btn.active {
+  background: #ff8a65;
+  color: #fff;
+}
+
+.mode-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.controls {
   display: flex;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.note-badge {
-  padding: 4px 10px;
-  background: #1a1515;
-  border: 1px solid #3a3030;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 12px;
-  color: #ff8a65;
-}
-
-.checkbox {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  cursor: pointer;
-  user-select: none;
 }
 
-.checkbox input[type='checkbox'] {
-  width: 16px;
-  height: 16px;
+.settings-btn {
+  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #666;
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.settings-btn:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.settings-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.action-btn.start {
+  background: #66bb6a;
+  color: #fff;
+}
+
+.action-btn.start:hover {
+  background: #57a65a;
+}
+
+.action-btn.stop {
+  background: #e57373;
+  color: #fff;
+}
+
+.action-btn.stop:hover {
+  background: #d95f5f;
+}
+
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }
 
 @media (max-width: 768px) {
-  .practice-page {
+  .toolbar {
     flex-direction: column;
+    align-items: stretch;
   }
 
-  .sidebar {
+  .controls {
     width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .settings-btn,
+  .action-btn {
+    flex: 1;
+    min-width: 120px;
   }
 }
 </style>

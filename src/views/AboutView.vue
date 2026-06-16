@@ -57,7 +57,7 @@
 .about-page {
   max-width: 800px;
   margin: 0 auto;
-  color: #eee;
+  color: #333;
 }
 
 .page-header {
@@ -71,7 +71,7 @@
 
 .subtitle {
   margin: 0;
-  color: #aaa;
+  color: #666;
   font-size: 14px;
 }
 
@@ -88,7 +88,7 @@
 .section p {
   margin: 0 0 12px;
   line-height: 1.6;
-  color: #ccc;
+  color: #666;
   font-size: 14px;
 }
 
@@ -96,7 +96,7 @@
   margin: 0;
   padding-left: 20px;
   line-height: 1.8;
-  color: #ccc;
+  color: #666;
   font-size: 14px;
 }
 
@@ -105,7 +105,7 @@
 }
 
 .feature-list strong {
-  color: #ffecb3;
+  color: #333;
 }
 
 .tech-tags {
@@ -116,8 +116,8 @@
 
 .tag {
   padding: 4px 12px;
-  background: #2c2424;
-  border: 1px solid #3a3030;
+  background: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
   font-size: 12px;
   color: #ff8a65;

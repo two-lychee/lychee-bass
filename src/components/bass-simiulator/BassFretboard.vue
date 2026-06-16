@@ -14,7 +14,7 @@
       @click="unlockAudio"
     >
       <!-- 指板背景 -->
-      <rect width="100%" height="100%" fill="#3b2f2f" rx="8" />
+      <rect width="100%" height="100%" fill="#d4a574" rx="8" />
 
       <!-- 品格线（含 0 = 弦枕） -->
       <g v-for="fret in fretCount + 1" :key="`fret-${fret - 1}`">
@@ -23,7 +23,7 @@
           :y1="(fret - 1) * fretHeight"
           :x2="svgWidth"
           :y2="(fret - 1) * fretHeight"
-          stroke="#bbb"
+          stroke="#888"
           :stroke-width="fret === 1 ? 4 : 2"
         />
       </g>
@@ -34,7 +34,7 @@
           :x="svgWidth - 10"
           :y="fret * fretHeight - 10"
           font-size="14"
-          fill="#eee"
+          fill="#666"
           text-anchor="end"
         >
           {{ fret }}
@@ -47,7 +47,7 @@
           :cx="svgWidth / 2"
           :cy="(fret - 0.5) * fretHeight"
           r="6"
-          fill="#eee"
+          fill="#999"
           opacity="0.5"
         />
       </g>
@@ -59,7 +59,7 @@
           y1="0"
           :x2="x"
           :y2="svgHeight"
-          :stroke="activeString === stringIndex ? '#fff' : '#ccc'"
+          :stroke="activeString === stringIndex ? '#333' : '#666'"
           :stroke-width="stringThickness[stringIndex]"
         />
       </g>
@@ -106,7 +106,7 @@
             :x="x - 15"
             :y="fretCenterY(fret - 1)"
             font-size="15"
-            fill="#ffecb3"
+            fill="#333"
             text-anchor="middle"
             dominant-baseline="middle"
           >
@@ -279,8 +279,8 @@ const unlockAudio = async () => {
 }
 
 .bass-svg {
-  background: #3b2f2f;
-  border: 2px solid #555;
+  background: #d4a574;
+  border: 2px solid #bbb;
   display: block;
   margin: 0 auto;
   touch-action: none;
@@ -293,7 +293,7 @@ const unlockAudio = async () => {
   padding: 6px 12px;
   font-size: 14px;
   border-radius: 4px;
-  background: #555;
+  background: #ff8a65;
   color: #fff;
   border: none;
   cursor: pointer;

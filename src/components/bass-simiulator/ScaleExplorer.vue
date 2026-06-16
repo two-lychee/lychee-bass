@@ -48,6 +48,7 @@
     </div>
 
     <BassFretboard
+      :tuning="customTuning"
       :highlights="highlights"
       :initial-show-note-names="false"
       :show-toggle="true"
@@ -77,6 +78,21 @@ const FRET_COUNT = 12
 
 const scaleNotes = computed(() => buildScale(root.value, scale.value))
 
+// 根据根音调整调弦，让指板播放的音更贴合当前音阶
+const customTuning = computed(() => {
+  const rootIndex = NOTE_NAMES.indexOf(root.value)
+  const standardRootIndex = NOTE_NAMES.indexOf('E')
+  const shift = rootIndex - standardRootIndex
+
+  return STANDARD_TUNING.map(note => {
+    const noteBase = stripOctave(note)
+    const octave = note.slice(-1)
+    const noteIndex = NOTE_NAMES.indexOf(noteBase)
+    const newIndex = (noteIndex + shift + 12) % 12
+    return NOTE_NAMES[newIndex] + octave
+  }) as readonly string[]
+})
+
 const roleColor: Record<'root' | 'third' | 'fifth' | 'other', string> = {
   root: '#ef5350',
   third: '#42a5f5',
@@ -86,9 +102,9 @@ const roleColor: Record<'root' | 'third' | 'fifth' | 'other', string> = {
 
 const highlights = computed<FretMark[]>(() => {
   const marks: FretMark[] = []
-  for (let s = 0; s < STANDARD_TUNING.length; s++) {
+  for (let s = 0; s < customTuning.value.length; s++) {
     for (let f = 0; f <= FRET_COUNT; f++) {
-      const noteName = stripOctave(calcNote(STANDARD_TUNING[s], f))
+      const noteName = stripOctave(calcNote(customTuning.value[s], f))
       const role = noteRole(noteName, root.value, scale.value)
       if (role) {
         marks.push({
@@ -112,7 +128,7 @@ const highlights = computed<FretMark[]>(() => {
   align-items: flex-start;
   flex-wrap: wrap;
   justify-content: center;
-  color: #eee;
+  color: #333;
 }
 
 .panel {
@@ -129,7 +145,7 @@ h2 {
 .hint {
   margin: 0;
   font-size: 13px;
-  color: #ccc;
+  color: #666;
 }
 
 .control {
@@ -140,7 +156,7 @@ h2 {
 
 label {
   font-size: 13px;
-  color: #aaa;
+  color: #666;
 }
 
 .chips {
@@ -153,9 +169,9 @@ label {
   padding: 4px 8px;
   font-size: 12px;
   border-radius: 4px;
-  border: 1px solid #555;
-  background: #3b2f2f;
-  color: #ffecb3;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #333;
   cursor: pointer;
 }
 
@@ -170,7 +186,7 @@ label {
   flex-wrap: wrap;
   gap: 12px;
   font-size: 12px;
-  color: #ccc;
+  color: #666;
 }
 
 .legend .dot {
@@ -187,11 +203,11 @@ label {
 }
 
 .note-list {
-  color: #ffecb3;
+  color: #333;
   font-family: monospace;
 }
 
 .muted {
-  color: #888;
+  color: #999;
 }
 </style>
