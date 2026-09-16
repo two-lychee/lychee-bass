@@ -13,6 +13,8 @@ dist
 dist-ssr
 coverage
 *.local
+# 暂时保留下载的音频采样
+public/bass-samples
 
 /cypress/videos/
 /cypress/screenshots/
@@ -28,3 +30,6 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Local score server data
+server-data/

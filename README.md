@@ -26,6 +26,27 @@ pnpm install
 pnpm dev
 ```
 
+In another terminal, start the score API:
+
+```sh
+pnpm server:dev
+```
+
+The Vite development server proxies `/api` to `http://localhost:3001`.
+
+### Score Backend
+
+The Fastify backend stores Guitar Pro files under `server-data/scores` and score metadata in
+`server-data/scores.sqlite`. Both are local runtime data and are ignored by Git.
+
+```sh
+pnpm server:start
+```
+
+After `pnpm build`, the backend also serves the production frontend at `http://localhost:3001`.
+The score API includes upload, list, score metadata, practice data, original-file download, and
+delete endpoints under `/api/scores`.
+
 ### Type-Check, Compile and Minify for Production
 
 ```sh

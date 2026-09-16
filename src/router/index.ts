@@ -27,6 +27,29 @@ const router = createRouter({
       path: '/practice',
       name: 'practice',
       component: () => import('../views/PracticeView.vue'),
+      redirect: { name: 'practice-lesson' },
+      children: [
+        {
+          path: 'library',
+          name: 'practice-library',
+          component: () => import('../views/practice/PracticeLibraryView.vue'),
+        },
+        {
+          path: 'lesson',
+          name: 'practice-lesson',
+          component: () => import('../views/practice/PracticeLessonView.vue'),
+        },
+        {
+          path: 'metronome',
+          name: 'practice-metronome',
+          component: () => import('../views/practice/PracticeMetronomeView.vue'),
+        },
+        {
+          path: 'fretboard',
+          name: 'practice-fretboard',
+          component: () => import('../views/practice/PracticeFretboardView.vue'),
+        },
+      ],
     },
   ],
 })

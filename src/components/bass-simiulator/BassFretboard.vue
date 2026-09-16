@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import * as Tone from 'tone'
 import { STANDARD_TUNING, calcNote, stripOctave } from './music-theory'
 
@@ -184,7 +184,7 @@ const dotFrets = [3, 5, 7, 9, 12]
 
 const showNoteNames = ref(props.initialShowNoteNames)
 
-const synth = new Tone.MonoSynth({
+const fallbackSynth = new Tone.MonoSynth({
   oscillator: { type: 'square' },
   filter: { Q: 2, type: 'lowpass', rolloff: -24 },
   envelope: { attack: 0.005, decay: 0.3, sustain: 0.4, release: 1.2 },
@@ -198,6 +198,39 @@ const synth = new Tone.MonoSynth({
   },
 }).toDestination()
 
+const samplerLoaded = ref(false)
+const samplerFailed = ref(false)
+
+// These samples come from tonejs-instruments' electric bass set.
+const sampler = new Tone.Sampler({
+  urls: {
+    E1: 'E1.mp3',
+    G1: 'G1.mp3',
+    'A#1': 'As1.mp3',
+    'C#1': 'Cs1.mp3',
+    E2: 'E2.mp3',
+    G2: 'G2.mp3',
+    'A#2': 'As2.mp3',
+    'C#2': 'Cs2.mp3',
+    E3: 'E3.mp3',
+    G3: 'G3.mp3',
+    'A#3': 'As3.mp3',
+    'C#3': 'Cs3.mp3',
+    E4: 'E4.mp3',
+    G4: 'G4.mp3',
+    'A#4': 'As4.mp3',
+    'C#4': 'Cs4.mp3',
+    'C#5': 'Cs5.mp3',
+  },
+  baseUrl: '/bass-samples/bass-electric/',
+  onload: () => {
+    samplerLoaded.value = true
+  },
+  onerror: () => {
+    samplerFailed.value = true
+  },
+}).toDestination()
+
 const activeString = ref<number | null>(null)
 
 const fretCenterY = (fret: number) => fret * fretHeight + fretHeight / 2
@@ -207,7 +240,13 @@ const hasHighlight = (stringIndex: number, fret: number) =>
 
 const playNote = (stringIndex: number, fret: number) => {
   const note = calcNote(openNotes.value[stringIndex], fret)
-  if (!props.muted) synth.triggerAttackRelease(note, '8n')
+  if (!props.muted) {
+    if (samplerLoaded.value) {
+      sampler.triggerAttackRelease(note, '8n')
+    } else if (samplerFailed.value) {
+      fallbackSynth.triggerAttackRelease(note, '8n')
+    }
+  }
   activeString.value = stringIndex
   setTimeout(() => (activeString.value = null), 150)
   emit('note-played', { stringIndex, fret, note })
@@ -269,6 +308,11 @@ const unlockAudio = async () => {
     audioUnlocked.value = true
   }
 }
+
+onUnmounted(() => {
+  sampler.dispose()
+  fallbackSynth.dispose()
+})
 </script>
 
 <style scoped>

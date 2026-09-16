@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+</script>
+
 <template>
   <div class="app-layout">
     <header class="header">
@@ -9,7 +15,7 @@
       </div>
     </header>
 
-    <main class="main">
+    <main class="main" :class="{ 'wide-main': route.path.startsWith('/practice') }">
       <slot />
     </main>
 
@@ -92,6 +98,12 @@
   padding: 24px 20px;
 }
 
+.main.wide-main {
+  max-width: none;
+  padding-right: 32px;
+  padding-left: 32px;
+}
+
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -136,6 +148,11 @@
 }
 
 @media (max-width: 640px) {
+  .main.wide-main {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
   .nav-item .label {
     font-size: 10px;
   }

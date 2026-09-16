@@ -1,255 +1,85 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import Metronome from '@/components/bass-simiulator/Metronome.vue'
-import FingerExercise from '@/components/bass-simiulator/FingerExercise.vue'
-import ExerciseSettings, { type ExerciseConfig } from '@/components/bass-simiulator/ExerciseSettings.vue'
-import AppModal from '@/components/common/AppModal.vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 
-const mode = ref<'metronome' | 'exercise'>('metronome')
-const showMetronomeSettings = ref(false)
-const showExerciseSettings = ref(false)
-const isRunning = ref(false)
+const route = useRoute()
 
-const fingerExerciseRef = ref<InstanceType<typeof FingerExercise>>()
-const metronomeRef = ref<InstanceType<typeof Metronome>>()
-const hiddenMetronomeRef = ref<InstanceType<typeof Metronome>>()
-
-const exerciseConfig = ref<ExerciseConfig>({
-  patternIndex: 0,
-  startString: 0,
-  startFret: 0,
-  repeatAcrossStrings: false,
-  fretIncrement: 1,
-  showNoteName: true,
-})
-
-const onBeat = () => {
-  if (mode.value === 'exercise' && isRunning.value && fingerExerciseRef.value) {
-    fingerExerciseRef.value.nextStep()
-  }
-}
-
-const startPractice = () => {
-  if (mode.value === 'exercise' && fingerExerciseRef.value && hiddenMetronomeRef.value) {
-    fingerExerciseRef.value.reset()
-    hiddenMetronomeRef.value.start()
-  }
-  isRunning.value = true
-}
-
-const stopPractice = () => {
-  if (hiddenMetronomeRef.value) {
-    hiddenMetronomeRef.value.stop()
-  }
-  isRunning.value = false
-  if (fingerExerciseRef.value) {
-    fingerExerciseRef.value.reset()
-  }
-}
-
-const updateExerciseConfig = (config: ExerciseConfig) => {
-  exerciseConfig.value = config
-}
+const modules = [
+  {
+    name: 'practice-library',
+    label: '练习库',
+    description: '选择今天要练的内容',
+    icon: '▦',
+  },
+  {
+    name: 'practice-lesson',
+    label: '谱子练习',
+    description: '节奏、Tab 与指板同步',
+    icon: '♫',
+  },
+  {
+    name: 'practice-metronome',
+    label: '节拍器',
+    description: '独立练节拍与律动',
+    icon: '◷',
+  },
+]
 </script>
 
 <template>
-  <div class="practice-page">
-    <div class="toolbar">
-      <div class="mode-switch">
-        <button
-          class="mode-btn"
-          :class="{ active: mode === 'metronome' }"
-          :disabled="isRunning"
-          @click="mode = 'metronome'"
-        >
-          节拍器
-        </button>
-        <button
-          class="mode-btn"
-          :class="{ active: mode === 'exercise' }"
-          :disabled="isRunning"
-          @click="mode = 'exercise'"
-        >
-          爬格子训练
-        </button>
+  <div class="practice-shell">
+    <header class="practice-topbar">
+      <div>
+        <p class="eyebrow">练习空间</p>
+        <h1>今天练什么？</h1>
       </div>
+      <span class="route-state">{{ modules.find((item) => item.name === route.name)?.label }}</span>
+    </header>
 
-      <div v-if="mode === 'exercise'" class="controls">
-        <button
-          class="settings-btn"
-          :disabled="isRunning"
-          @click="showExerciseSettings = true"
-        >
-          ⚙️ 爬格子设置
-        </button>
-        <button
-          class="settings-btn"
-          :disabled="isRunning"
-          @click="showMetronomeSettings = true"
-        >
-          🥁 节拍器设置
-        </button>
-        <button
-          v-if="!isRunning"
-          class="action-btn start"
-          @click="startPractice"
-        >
-          ▶ 开始
-        </button>
-        <button
-          v-else
-          class="action-btn stop"
-          @click="stopPractice"
-        >
-          ⏸ 停止
-        </button>
-      </div>
-    </div>
+    <nav class="module-nav" aria-label="练习模块">
+      <RouterLink
+        v-for="item in modules"
+        :key="item.name"
+        :to="{ name: item.name }"
+        class="module-link"
+        :class="{ active: route.name === item.name }"
+      >
+        <span class="module-icon" aria-hidden="true">{{ item.icon }}</span>
+        <span class="module-copy">
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.description }}</small>
+        </span>
+      </RouterLink>
+    </nav>
 
-    <div class="main-content">
-      <Metronome v-if="mode === 'metronome'" ref="metronomeRef" />
-      <FingerExercise v-else ref="fingerExerciseRef" :config="exerciseConfig" />
-      <Metronome v-if="mode === 'exercise'" ref="hiddenMetronomeRef" hide-controls style="display: none" @beat="onBeat" />
-    </div>
-
-    <AppModal :show="showMetronomeSettings" title="节拍器设置" @close="showMetronomeSettings = false">
-      <Metronome hide-controls />
-    </AppModal>
-
-    <AppModal :show="showExerciseSettings" title="爬格子设置" @close="showExerciseSettings = false">
-      <ExerciseSettings :config="exerciseConfig" @update="updateExerciseConfig" />
-    </AppModal>
+    <main class="practice-content">
+      <RouterView />
+    </main>
   </div>
 </template>
 
 <style scoped>
-.practice-page {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.mode-switch {
-  display: flex;
-  gap: 4px;
-  background: #fff;
-  padding: 4px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-}
-
-.mode-btn {
-  padding: 8px 16px;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  color: #666;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.mode-btn:hover {
-  background: #f5f5f5;
-}
-
-.mode-btn.active {
-  background: #ff8a65;
-  color: #fff;
-}
-
-.mode-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.controls {
-  display: flex;
-  gap: 8px;
-}
-
-.settings-btn {
-  padding: 8px 16px;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  color: #666;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.settings-btn:hover:not(:disabled) {
-  background: #f5f5f5;
-  border-color: #ccc;
-}
-
-.settings-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.action-btn {
-  padding: 8px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.action-btn.start {
-  background: #66bb6a;
-  color: #fff;
-}
-
-.action-btn.start:hover {
-  background: #57a65a;
-}
-
-.action-btn.stop {
-  background: #e57373;
-  color: #fff;
-}
-
-.action-btn.stop:hover {
-  background: #d95f5f;
-}
-
-.main-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-}
-
-@media (max-width: 768px) {
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .controls {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .settings-btn,
-  .action-btn {
-    flex: 1;
-    min-width: 120px;
-  }
+.practice-shell { color: #27313b; width: 100%; }
+.practice-topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.eyebrow { margin: 0 0 4px; color: #e56f4d; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+h1 { margin: 0; font-size: 28px; line-height: 1.15; }
+.route-state { color: #68727c; font-size: 13px; }
+.module-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+.module-link { display: flex; align-items: center; gap: 10px; min-height: 62px; padding: 10px 12px; border: 1px solid #dfe3e6; border-radius: 6px; background: #fff; color: #68727c; text-decoration: none; }
+.module-link:hover, .module-link.active { border-color: #e56f4d; background: #fff8f5; color: #27313b; }
+.module-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 5px; background: #f0f2f3; color: #e56f4d; font-size: 18px; }
+.active .module-icon { background: #ffe3d8; }
+.module-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.module-copy strong { font-size: 13px; }
+.module-copy small { overflow: hidden; color: #8a949c; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.practice-content { min-width: 0; }
+@media (max-width: 640px) {
+  .practice-topbar { align-items: flex-start; flex-direction: column; gap: 5px; }
+  h1 { font-size: 24px; }
+  .route-state { display: none; }
+  .module-nav { position: sticky; top: 56px; z-index: 10; grid-template-columns: repeat(4, minmax(76px, 1fr)); overflow-x: auto; margin: 0 -20px 16px; padding: 8px 20px; border-top: 1px solid #eef0f1; border-bottom: 1px solid #dfe3e6; background: rgba(255, 255, 255, .96); }
+  .module-link { min-height: 52px; justify-content: center; padding: 7px 4px; }
+  .module-icon { width: 24px; height: 24px; font-size: 15px; }
+  .module-copy small { display: none; }
+  .module-copy strong { font-size: 12px; }
 }
 </style>
