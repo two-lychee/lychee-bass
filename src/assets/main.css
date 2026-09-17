@@ -1,21 +1,20 @@
-@import './base.css';
+@import "tailwindcss";
+@import "@nuxt/ui";
 
-#app {
-  width: 100%;
-  min-height: 100vh;
-  font-weight: normal;
-}
-
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+/* 荔枝橙色阶：以项目既有用色为锚点
+   400 = #ff8a65 指板高亮主色
+   500 = #ff7043 悬停态
+   600 = #e56f4d 练习模块 eyebrow / 强调色 */
+@theme static {
+  --color-lychee-50: #fff3ee;
+  --color-lychee-100: #ffe3d8;
+  --color-lychee-200: #ffc9b5;
+  --color-lychee-300: #ffab8f;
+  --color-lychee-400: #ff8a65;
+  --color-lychee-500: #ff7043;
+  --color-lychee-600: #e56f4d;
+  --color-lychee-700: #c9532f;
+  --color-lychee-800: #a54024;
+  --color-lychee-900: #7c2f1a;
+  --color-lychee-950: #4a1d10;
 }

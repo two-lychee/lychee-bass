@@ -1,49 +1,5 @@
-<template>
-  <div class="exercise-settings">
-    <div class="control">
-      <label>练习模式</label>
-      <select v-model="localSettings.patternIndex" class="select">
-        <option v-for="(p, i) in patterns" :key="i" :value="i">
-          {{ p.name }} ({{ p.sequence.join('-') }})
-        </option>
-      </select>
-    </div>
-
-    <div class="control-row">
-      <div class="control">
-        <label>起始弦</label>
-        <input v-model.number="localSettings.startString" type="number" min="0" max="3" class="input" />
-      </div>
-      <div class="control">
-        <label>起始品</label>
-        <input v-model.number="localSettings.startFret" type="number" min="0" max="20" class="input" />
-      </div>
-    </div>
-
-    <div class="control">
-      <label class="checkbox">
-        <input v-model="localSettings.repeatAcrossStrings" type="checkbox" />
-        跨弦重复
-      </label>
-    </div>
-
-    <div class="control">
-      <label>跨品递增（每轮增加品数）</label>
-      <input v-model.number="localSettings.fretIncrement" type="number" min="0" max="5" class="input" />
-      <p class="hint">设为0则不递增，设为1则每轮增加1品</p>
-    </div>
-
-    <div class="control">
-      <label class="checkbox">
-        <input v-model="localSettings.showNoteName" type="checkbox" />
-        显示音名提示
-      </label>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 
 export interface ExerciseConfig {
   patternIndex: number
@@ -78,65 +34,41 @@ watch(localSettings, () => {
 })
 
 defineExpose({ patterns })
+
+const patternItems = computed(() =>
+  patterns.map((p, i) => ({
+    label: `${p.name} (${p.sequence.join('-')})`,
+    value: i,
+  })),
+)
 </script>
 
-<style scoped>
-.exercise-settings {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 4px;
-}
+<template>
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1.5">
+      <span class="text-sm font-medium text-muted">练习模式</span>
+      <USelect v-model="localSettings.patternIndex" :items="patternItems" value-key="value" />
+    </div>
 
-.control {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+    <div class="flex gap-3">
+      <div class="flex flex-1 flex-col gap-1.5">
+        <span class="text-sm font-medium text-muted">起始弦</span>
+        <UInputNumber v-model="localSettings.startString" :min="0" :max="3" />
+      </div>
+      <div class="flex flex-1 flex-col gap-1.5">
+        <span class="text-sm font-medium text-muted">起始品</span>
+        <UInputNumber v-model="localSettings.startFret" :min="0" :max="20" />
+      </div>
+    </div>
 
-.control label {
-  font-size: 13px;
-  color: #666;
-  font-weight: 500;
-}
+    <UCheckbox v-model="localSettings.repeatAcrossStrings" label="跨弦重复" />
 
-.select,
-.input {
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  background: #fff;
-  color: #333;
-}
+    <div class="flex flex-col gap-1.5">
+      <span class="text-sm font-medium text-muted">跨品递增（每轮增加品数）</span>
+      <UInputNumber v-model="localSettings.fretIncrement" :min="0" :max="5" />
+      <p class="text-xs text-dimmed">设为 0 则不递增，设为 1 则每轮增加 1 品</p>
+    </div>
 
-.control-row {
-  display: flex;
-  gap: 12px;
-}
-
-.control-row .control {
-  flex: 1;
-}
-
-.checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-  font-weight: normal;
-}
-
-.checkbox input {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.hint {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: #999;
-}
-</style>
+    <UCheckbox v-model="localSettings.showNoteName" label="显示音名提示" />
+  </div>
+</template>

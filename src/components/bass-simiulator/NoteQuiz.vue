@@ -1,55 +1,3 @@
-<template>
-  <div class="quiz">
-    <div class="panel">
-      <div class="header">
-        <h2>音名识别</h2>
-        <p class="hint">
-          指板上高亮的位置是哪个音？
-          <span class="muted">（不区分八度）</span>
-        </p>
-      </div>
-
-      <div class="stats">
-        <span>得分 {{ score }} / {{ total }}</span>
-        <span>连击 {{ streak }}</span>
-        <span>最高连击 {{ bestStreak }}</span>
-        <span>正确率 {{ accuracy }}%</span>
-      </div>
-
-      <div class="options">
-        <button
-          v-for="opt in options"
-          :key="opt"
-          class="option"
-          :class="optionClass(opt)"
-          :disabled="answered"
-          @click="answer(opt)"
-        >
-          {{ opt }}
-        </button>
-      </div>
-
-      <div class="feedback" :class="{ correct: lastResult === 'correct', wrong: lastResult === 'wrong' }">
-        <template v-if="lastResult === 'correct'">✓ 正确，就是 {{ currentAnswer }}</template>
-        <template v-else-if="lastResult === 'wrong'">✗ 答案是 {{ currentAnswer }}</template>
-        <template v-else>选一个音名</template>
-      </div>
-
-      <div class="actions">
-        <button class="primary" @click="next" :disabled="!answered">下一题</button>
-        <button class="ghost" @click="reset">重置统计</button>
-      </div>
-    </div>
-
-    <BassFretboard
-      :highlights="highlights"
-      :initial-show-note-names="false"
-      :show-toggle="false"
-      muted
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import BassFretboard, { type FretMark } from './BassFretboard.vue'
@@ -92,6 +40,13 @@ const highlights = computed<FretMark[]>(() => [
   },
 ])
 
+const stats = computed(() => [
+  { label: `得分 ${score.value} / ${total.value}` },
+  { label: `连击 ${streak.value}` },
+  { label: `最高连击 ${bestStreak.value}` },
+  { label: `正确率 ${accuracy.value}%` },
+])
+
 const randInt = (max: number) => Math.floor(Math.random() * max)
 
 const next = () => {
@@ -132,11 +87,11 @@ const answer = (opt: NoteName) => {
   }
 }
 
-const optionClass = (opt: NoteName) => {
-  if (!answered.value) return ''
-  if (opt === currentAnswer.value) return 'correct'
-  if (opt === selected.value) return 'wrong'
-  return 'dim'
+const optionProps = (opt: NoteName) => {
+  if (!answered.value) return { color: 'neutral' as const, variant: 'outline' as const }
+  if (opt === currentAnswer.value) return { color: 'success' as const, variant: 'solid' as const }
+  if (opt === selected.value) return { color: 'error' as const, variant: 'solid' as const }
+  return { color: 'neutral' as const, variant: 'outline' as const }
 }
 
 const reset = () => {
@@ -150,132 +105,65 @@ const reset = () => {
 onMounted(next)
 </script>
 
-<style scoped>
-.quiz {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  justify-content: center;
-}
+<template>
+  <div class="flex flex-wrap items-start justify-center gap-6">
+    <UCard class="w-full shrink-0 sm:w-80">
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <h2 class="text-lg font-bold text-highlighted">音名识别</h2>
+          <p class="text-sm text-muted">
+            指板上高亮的位置是哪个音？
+            <span class="text-dimmed">（不区分八度）</span>
+          </p>
+        </div>
 
-.panel {
-  flex: 0 0 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  color: #333;
-}
+        <div class="flex flex-wrap gap-2">
+          <UBadge
+            v-for="(stat, i) in stats"
+            :key="i"
+            :label="stat.label"
+            color="neutral"
+            variant="subtle"
+          />
+        </div>
 
-.header h2 {
-  margin: 0 0 4px;
-}
+        <div class="grid grid-cols-2 gap-2">
+          <UButton
+            v-for="opt in options"
+            :key="opt"
+            :label="opt"
+            size="xl"
+            v-bind="optionProps(opt)"
+            :disabled="answered"
+            :class="answered && opt !== currentAnswer && opt !== selected ? 'opacity-40' : ''"
+            @click="answer(opt)"
+          />
+        </div>
 
-.hint {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
-}
+        <p
+          class="min-h-6 text-sm font-medium"
+          :class="[
+            lastResult === 'correct' ? 'text-success' : '',
+            lastResult === 'wrong' ? 'text-error' : 'text-dimmed',
+          ]"
+        >
+          <template v-if="lastResult === 'correct'">✓ 正确，就是 {{ currentAnswer }}</template>
+          <template v-else-if="lastResult === 'wrong'">✗ 答案是 {{ currentAnswer }}</template>
+          <template v-else>选一个音名</template>
+        </p>
 
-.muted {
-  color: #999;
-}
+        <div class="flex gap-2">
+          <UButton label="下一题" :disabled="!answered" @click="next" />
+          <UButton label="重置统计" variant="outline" color="neutral" @click="reset" />
+        </div>
+      </div>
+    </UCard>
 
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 13px;
-  color: #666;
-  padding: 8px 12px;
-  background: #fff;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-}
-
-.options {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.option {
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  background: #fff;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.option:hover:not(:disabled) {
-  background: #f5f5f5;
-  border-color: #ccc;
-}
-
-.option.correct {
-  background: #81c784;
-  color: #fff;
-  border-color: #81c784;
-}
-
-.option.wrong {
-  background: #e57373;
-  color: #fff;
-  border-color: #e57373;
-}
-
-.option.dim {
-  opacity: 0.4;
-}
-
-.option:disabled {
-  cursor: default;
-}
-
-.feedback {
-  min-height: 22px;
-  font-size: 14px;
-  color: #999;
-}
-
-.feedback.correct {
-  color: #66bb6a;
-}
-
-.feedback.wrong {
-  color: #e57373;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
-
-.ghost {
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.primary {
-  background: #ff8a65;
-  color: #fff;
-}
-
-.primary:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.ghost {
-  background: transparent;
-  color: #666;
-  border: 1px solid #e0e0e0;
-}
-</style>
+    <BassFretboard
+      :highlights="highlights"
+      :initial-show-note-names="false"
+      :show-toggle="false"
+      muted
+    />
+  </div>
+</template>

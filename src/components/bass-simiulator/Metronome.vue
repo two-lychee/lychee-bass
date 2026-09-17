@@ -1,104 +1,3 @@
-<template>
-  <div class="metronome">
-    <div v-if="!hideControls" class="display-section">
-      <div class="bpm-display">
-        <div class="bpm-value">{{ bpm }}</div>
-        <div class="bpm-label">BPM</div>
-      </div>
-      <button class="play-btn" :class="{ playing: isPlaying }" @click="toggle">
-        <span class="icon">{{ isPlaying ? '⏸' : '▶' }}</span>
-      </button>
-    </div>
-
-    <div v-if="!hideControls" class="beats-display">
-      <div
-        v-for="i in beatsPerBar"
-        :key="i"
-        class="beat"
-        :class="{ active: currentBeat === i - 1, downbeat: i === 1 }"
-      />
-    </div>
-
-    <div class="controls">
-      <div class="control-group">
-        <label>速度</label>
-        <input v-model.number="bpm" type="range" min="40" max="240" step="1" class="slider" />
-        <div class="presets">
-          <button v-for="p in [60, 90, 120, 140, 180]" :key="p" @click="bpm = p" class="preset-btn">
-            {{ p }}
-          </button>
-        </div>
-      </div>
-
-      <div class="control-group">
-        <label>拍号</label>
-        <div class="btn-group">
-          <button
-            v-for="ts in timeSigs"
-            :key="ts.label"
-            class="option-btn"
-            :class="{ active: beatsPerBar === ts.beats }"
-            @click="beatsPerBar = ts.beats"
-          >
-            {{ ts.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="control-group">
-        <label>节奏型</label>
-        <div class="btn-group">
-          <button
-            v-for="r in rhythmPatterns"
-            :key="r.value"
-            class="option-btn"
-            :class="{ active: rhythmPattern === r.value }"
-            @click="rhythmPattern = r.value"
-            :title="r.desc"
-          >
-            {{ r.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="control-group">
-        <label>重音</label>
-        <div class="btn-group">
-          <button
-            v-for="a in accentPresets"
-            :key="a.label"
-            class="option-btn"
-            :class="{ active: JSON.stringify(accentPattern) === JSON.stringify(a.pattern) }"
-            @click="accentPattern = a.pattern"
-          >
-            {{ a.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="control-group">
-        <label>细分</label>
-        <div class="btn-group">
-          <button
-            v-for="s in subdivisionOptions"
-            :key="s.value"
-            class="option-btn"
-            :class="{ active: subdivision === s.value }"
-            @click="subdivision = s.value"
-          >
-            {{ s.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="control-group">
-        <label>音量 {{ volume }}dB</label>
-        <input v-model.number="volume" type="range" min="-30" max="0" step="1" class="slider" />
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { watch } from 'vue'
 import { useMetronome } from '@/composables/useMetronome'
@@ -147,198 +46,126 @@ const accentPresets = [
   { label: '全重音', pattern: [1, 2, 3, 4, 5, 6, 7] },
   { label: '无重音', pattern: [] },
 ]
+
+const presets = [60, 90, 120, 140, 180]
 </script>
 
-<style scoped>
-.metronome {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 32px;
-  color: #333;
-  max-width: 480px;
-  margin: 0 auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
+<template>
+  <UCard>
+    <div class="flex flex-col gap-8">
+      <template v-if="!hideControls">
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col items-center">
+            <span class="text-5xl font-bold leading-none text-primary sm:text-6xl">{{ bpm }}</span>
+            <span class="mt-1 text-xs tracking-widest text-dimmed">BPM</span>
+          </div>
 
-.display-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
+          <button
+            class="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105 active:scale-95 sm:size-18"
+            :class="isPlaying ? 'bg-error shadow-error/30' : 'shadow-primary/30 hover:shadow-primary/40'"
+            :aria-label="isPlaying ? '暂停' : '播放'"
+            @click="toggle"
+          >
+            <UIcon :name="isPlaying ? 'i-lucide-pause' : 'i-lucide-play'" class="size-7" />
+          </button>
+        </div>
 
-.bpm-display {
-  text-align: center;
-}
+        <div class="flex flex-wrap justify-center gap-3 py-2">
+          <span
+            v-for="i in beatsPerBar"
+            :key="i"
+            class="size-5 rounded-full bg-elevated transition-all duration-150"
+            :class="[
+              currentBeat === i - 1 ? 'scale-[1.4] bg-primary shadow-[0_0_12px] shadow-primary/60' : '',
+              i === 1 && currentBeat === i - 1 ? '!bg-error shadow-[0_0_16px] shadow-error/70' : '',
+            ]"
+          />
+        </div>
+      </template>
 
-.bpm-value {
-  font-size: 56px;
-  font-weight: 700;
-  color: #ff8a65;
-  line-height: 1;
-}
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-medium uppercase tracking-wide text-muted">速度</label>
+          <USlider v-model="bpm" :min="40" :max="240" :step="1" />
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="p in presets"
+              :key="p"
+              :label="String(p)"
+              size="xs"
+              variant="soft"
+              color="neutral"
+              @click="bpm = p"
+            />
+          </div>
+        </div>
 
-.bpm-label {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
-  letter-spacing: 1px;
-}
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-medium uppercase tracking-wide text-muted">拍号</label>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="ts in timeSigs"
+              :key="ts.label"
+              :label="ts.label"
+              size="sm"
+              :variant="beatsPerBar === ts.beats ? 'solid' : 'outline'"
+              :color="beatsPerBar === ts.beats ? 'primary' : 'neutral'"
+              @click="beatsPerBar = ts.beats"
+            />
+          </div>
+        </div>
 
-.play-btn {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  border: none;
-  background: #ff8a65;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(255, 138, 101, 0.3);
-}
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-medium uppercase tracking-wide text-muted">节奏型</label>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="r in rhythmPatterns"
+              :key="r.value"
+              :label="r.label"
+              size="sm"
+              :title="r.desc"
+              :variant="rhythmPattern === r.value ? 'solid' : 'outline'"
+              :color="rhythmPattern === r.value ? 'primary' : 'neutral'"
+              @click="rhythmPattern = r.value"
+            />
+          </div>
+        </div>
 
-.play-btn .icon {
-  font-size: 28px;
-}
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-medium uppercase tracking-wide text-muted">重音</label>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="a in accentPresets"
+              :key="a.label"
+              :label="a.label"
+              size="sm"
+              :variant="JSON.stringify(accentPattern) === JSON.stringify(a.pattern) ? 'solid' : 'outline'"
+              :color="JSON.stringify(accentPattern) === JSON.stringify(a.pattern) ? 'primary' : 'neutral'"
+              @click="accentPattern = a.pattern"
+            />
+          </div>
+        </div>
 
-.play-btn:hover {
-  background: #ff7043;
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(255, 138, 101, 0.4);
-}
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-medium uppercase tracking-wide text-muted">细分</label>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="s in subdivisionOptions"
+              :key="s.value"
+              :label="s.label"
+              size="sm"
+              :variant="subdivision === s.value ? 'solid' : 'outline'"
+              :color="subdivision === s.value ? 'primary' : 'neutral'"
+              @click="subdivision = s.value"
+            />
+          </div>
+        </div>
 
-.play-btn:active {
-  transform: scale(0.98);
-}
-
-.play-btn.playing {
-  background: #e57373;
-  box-shadow: 0 4px 12px rgba(229, 115, 115, 0.3);
-}
-
-.beats-display {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 32px;
-  padding: 16px 0;
-}
-
-.beat {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #e0e0e0;
-  transition: all 0.15s;
-}
-
-.beat.active {
-  background: #ff8a65;
-  transform: scale(1.4);
-  box-shadow: 0 0 12px rgba(255, 138, 101, 0.6);
-}
-
-.beat.downbeat.active {
-  background: #ef5350;
-  box-shadow: 0 0 16px rgba(239, 83, 80, 0.7);
-}
-
-.controls {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.control-group label {
-  display: block;
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.slider {
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: #e0e0e0;
-  outline: none;
-  -webkit-appearance: none;
-}
-
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #ff8a65;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s;
-}
-
-.slider::-webkit-slider-thumb:hover {
-  background: #ff7043;
-  transform: scale(1.1);
-}
-
-.presets,
-.btn-group {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-.preset-btn,
-.option-btn {
-  flex: 1;
-  min-width: 50px;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  background: #fafafa;
-  color: #666;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.preset-btn:hover,
-.option-btn:hover {
-  background: #f0f0f0;
-  border-color: #ccc;
-}
-
-.option-btn.active {
-  background: #ff8a65;
-  border-color: #ff8a65;
-  color: #fff;
-}
-
-@media (max-width: 640px) {
-  .metronome {
-    padding: 24px;
-  }
-
-  .bpm-value {
-    font-size: 48px;
-  }
-
-  .play-btn {
-    width: 64px;
-    height: 64px;
-  }
-
-  .play-btn .icon {
-    font-size: 24px;
-  }
-}
-</style>
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-medium uppercase tracking-wide text-muted">音量 {{ volume }}dB</label>
+          <USlider v-model="volume" :min="-30" :max="0" :step="1" />
+        </div>
+      </div>
+    </div>
+  </UCard>
+</template>

@@ -13,6 +13,9 @@ dist
 dist-ssr
 coverage
 *.local
+# Nuxt UI 自动生成的声明文件
+auto-imports.d.ts
+components.d.ts
 # 暂时保留下载的音频采样
 public/bass-samples
 

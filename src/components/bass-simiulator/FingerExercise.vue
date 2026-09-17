@@ -1,7 +1,7 @@
 <template>
-  <div class="finger-exercise">
-    <div class="status-display">
-      <span class="current-pos">{{ currentStepInfo }}</span>
+  <div class="flex w-full flex-col gap-4">
+    <div class="rounded-lg bg-primary/10 px-4 py-3 text-center ring-1 ring-primary/30">
+      <span class="text-base font-semibold text-primary">{{ currentStepInfo }}</span>
     </div>
     <BassFretboard :highlights="highlights" :show-toggle="false" :fret-count="24" :initial-show-note-names="true" />
   </div>
@@ -125,26 +125,3 @@ const highlights = computed<FretMark[]>(() => {
   ]
 })
 </script>
-
-<style scoped>
-.finger-exercise {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-}
-
-.status-display {
-  padding: 12px 16px;
-  background: #fff8f0;
-  border: 1px solid #ffe0cc;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.current-pos {
-  font-size: 16px;
-  color: #ff8a65;
-  font-weight: 600;
-}
-</style>

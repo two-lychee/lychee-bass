@@ -1,61 +1,3 @@
-<template>
-  <div class="scale-explorer">
-    <div class="panel">
-      <h2>音阶探索</h2>
-      <p class="hint">选根音和调式，指板上自动标记。点击音格也能听。</p>
-
-      <div class="control">
-        <label>根音</label>
-        <div class="chips">
-          <button
-            v-for="n in NOTE_NAMES"
-            :key="n"
-            class="chip"
-            :class="{ active: root === n }"
-            @click="root = n"
-          >
-            {{ n }}
-          </button>
-        </div>
-      </div>
-
-      <div class="control">
-        <label>调式</label>
-        <div class="chips">
-          <button
-            v-for="(label, key) in SCALE_LABELS"
-            :key="key"
-            class="chip"
-            :class="{ active: scale === key }"
-            @click="scale = key"
-          >
-            {{ label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="legend">
-        <span><i class="dot" style="background: #ef5350" /> 根音</span>
-        <span><i class="dot" style="background: #42a5f5" /> 三度</span>
-        <span><i class="dot" style="background: #ab47bc" /> 五度</span>
-        <span><i class="dot" style="background: #ffb74d" /> 其它</span>
-      </div>
-
-      <div class="notes">
-        <span class="muted">音阶包含：</span>
-        <span class="note-list">{{ scaleNotes.join(' · ') }}</span>
-      </div>
-    </div>
-
-    <BassFretboard
-      :tuning="customTuning"
-      :highlights="highlights"
-      :initial-show-note-names="false"
-      :show-toggle="true"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import BassFretboard, { type FretMark } from './BassFretboard.vue'
@@ -119,95 +61,73 @@ const highlights = computed<FretMark[]>(() => {
   }
   return marks
 })
+
+const legend = [
+  { color: '#ef5350', label: '根音' },
+  { color: '#42a5f5', label: '三度' },
+  { color: '#ab47bc', label: '五度' },
+  { color: '#ffb74d', label: '其它' },
+]
 </script>
 
-<style scoped>
-.scale-explorer {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  justify-content: center;
-  color: #333;
-}
+<template>
+  <div class="flex flex-wrap items-start justify-center gap-6">
+    <UCard class="w-full shrink-0 sm:w-75">
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <h2 class="text-lg font-bold text-highlighted">音阶探索</h2>
+          <p class="text-sm text-muted">选根音和调式，指板上自动标记。点击音格也能听。</p>
+        </div>
 
-.panel {
-  flex: 0 0 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+        <div class="flex flex-col gap-2">
+          <span class="text-sm text-muted">根音</span>
+          <div class="flex flex-wrap gap-1">
+            <UButton
+              v-for="n in NOTE_NAMES"
+              :key="n"
+              :label="n"
+              size="xs"
+              :variant="root === n ? 'solid' : 'outline'"
+              :color="root === n ? 'primary' : 'neutral'"
+              @click="root = n"
+            />
+          </div>
+        </div>
 
-h2 {
-  margin: 0;
-}
+        <div class="flex flex-col gap-2">
+          <span class="text-sm text-muted">调式</span>
+          <div class="flex flex-wrap gap-1">
+            <UButton
+              v-for="(label, key) in SCALE_LABELS"
+              :key="key"
+              :label="label"
+              size="xs"
+              :variant="scale === key ? 'solid' : 'outline'"
+              :color="scale === key ? 'primary' : 'neutral'"
+              @click="scale = key"
+            />
+          </div>
+        </div>
 
-.hint {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
-}
+        <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+          <span v-for="item in legend" :key="item.label" class="inline-flex items-center gap-1.5">
+            <i class="inline-block size-2.5 rounded-full" :style="{ background: item.color }" />
+            {{ item.label }}
+          </span>
+        </div>
 
-.control {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+        <p class="text-sm">
+          <span class="text-dimmed">音阶包含：</span>
+          <span class="font-mono text-highlighted">{{ scaleNotes.join(' · ') }}</span>
+        </p>
+      </div>
+    </UCard>
 
-label {
-  font-size: 13px;
-  color: #666;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.chip {
-  padding: 4px 8px;
-  font-size: 12px;
-  border-radius: 4px;
-  border: 1px solid #e0e0e0;
-  background: #fff;
-  color: #333;
-  cursor: pointer;
-}
-
-.chip.active {
-  background: #ff8a65;
-  border-color: #ff8a65;
-  color: #fff;
-}
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 12px;
-  color: #666;
-}
-
-.legend .dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 4px;
-  vertical-align: middle;
-}
-
-.notes {
-  font-size: 13px;
-}
-
-.note-list {
-  color: #333;
-  font-family: monospace;
-}
-
-.muted {
-  color: #999;
-}
-</style>
+    <BassFretboard
+      :tuning="customTuning"
+      :highlights="highlights"
+      :initial-show-note-names="false"
+      :show-toggle="true"
+    />
+  </div>
+</template>
