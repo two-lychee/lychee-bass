@@ -4,8 +4,6 @@ import { useRoute } from 'vue-router'
 import BassFretboard, { type FretMark } from './BassFretboard.vue'
 import AlphaTabScoreView from './AlphaTabScoreView.vue'
 import ScoreStepGrid from './score-practice/ScoreStepGrid.vue'
-import ScoreCorrespondence from './score-practice/ScoreCorrespondence.vue'
-import ScoreCoach from './score-practice/ScoreCoach.vue'
 import { calcNote, stripOctave, STANDARD_TUNING } from './music-theory'
 import { useScorePlayback } from '@/composables/useScorePlayback'
 import {
@@ -42,10 +40,10 @@ const selectedId = ref(
   serverScoreId
     ? 'uploaded-gp'
     : typeof route.query.exercise === 'string' &&
-    (exercises.some((item) => item.id === route.query.exercise) ||
-      isImportedScoreId(route.query.exercise))
-    ? route.query.exercise
-    : exercises[0].id,
+        (exercises.some((item) => item.id === route.query.exercise) ||
+          isImportedScoreId(route.query.exercise))
+      ? route.query.exercise
+      : exercises[0].id,
 )
 const exercise = computed(() => {
   if (isImportedScoreId(selectedId.value) || selectedId.value === 'uploaded-gp') {
@@ -136,13 +134,17 @@ const current = computed(() => steps.value[Math.max(0, currentStep.value)] ?? st
 const currentInstruction = computed(() => {
   const step = current.value
   if (!step) {
-    return { title: '空小节', detail: '这一小节没有可播放内容。', rightHand: '休止', rhythm: '等待', leftHand: '放松左手', note: '休止', position: '准备下一小节' }
+    return {
+      rightHand: '休止',
+      rhythm: '等待',
+      leftHand: '放松左手',
+      note: '休止',
+      position: '准备下一小节',
+    }
   }
   const note = step.note
   if (!note) {
     return {
-      title: step.rightHand === '×' ? '右手闷音' : '保持右手运动',
-      detail: '这一格不发出音高，但动作不能停。',
       rightHand: step.rightHand === '×' ? '轻触琴弦' : '不发音',
       rhythm: step.subdivisionLabel,
       leftHand: '放松左手',
@@ -152,20 +154,75 @@ const currentInstruction = computed(() => {
   }
   const noteName = stripOctave(calcNote(STANDARD_TUNING[note.string], note.fret))
   return {
-    title: `第 ${note.string + 1} 弦 · ${note.fret} 品`,
-    detail: `左手建议使用 ${note.finger} 指，跟随当前拍完成动作。`,
     rightHand: step.rightHand === '↓' ? '下拨' : '上拨',
     rhythm: step.subdivisionLabel,
     leftHand: `${note.finger} 指`,
     note: `${noteName} · ${note.fret} 品`,
-    position: `${note.string === 0 ? 'E' : 'A'} 弦 ${note.fret} 品`,
+    position: `${['E', 'A', 'D', 'G'][note.string] ?? 'E'} 弦 ${note.fret} 品`,
   }
 })
 
+// 音游式提示：小节内同弦同品的音合并成一个标记。
+// 贝斯一小节常只有两三个位置、各被击打多次，按次数画圈会完全叠在一起，
+// 改成"一个位置 + ×N 角标 + 命中脉冲"，重复音也一眼可读
+const measureNotes = computed(() =>
+  steps.value.map((step, index) => ({ step, index })).filter((item) => item.step.note),
+)
+
+const positionGroups = computed(() => {
+  const groups: { key: string; string: number; fret: number; stepIndices: number[] }[] = []
+  for (const item of measureNotes.value) {
+    const note = item.step.note!
+    const key = `${note.string}:${note.fret}`
+    let group = groups.find((item) => item.key === key)
+    if (!group) {
+      group = { key, string: note.string, fret: note.fret, stepIndices: [] }
+      groups.push(group)
+    }
+    group.stepIndices.push(item.index)
+  }
+  return groups
+})
+
 const highlights = computed<FretMark[]>(() => {
-  const note = current.value?.note
-  if (!note || !isPlaying.value) return []
-  return [{ stringIndex: note.string, fret: note.fret, color: '#ff8a65', opacity: 0.95, label: String(note.finger) }]
+  const groups = positionGroups.value
+  if (!groups.length) return []
+  const marks = groups.map((group) => {
+    const occurrence = group.stepIndices.indexOf(currentStep.value) + 1
+    const isCurrent = occurrence > 0
+    return {
+      stringIndex: group.string,
+      fret: group.fret,
+      color: isCurrent ? '#ff8a65' : '#ffb74d',
+      opacity: isCurrent ? 0.95 : 0.5,
+      label: String(group.fret),
+      isCurrent,
+      hits: group.stepIndices.length,
+      occurrence,
+    }
+  })
+  // 当前音画在最后，避免和同位置的提示圈叠在一起时被盖住
+  const currentIndex = marks.findIndex((mark) => mark.isCurrent)
+  if (currentIndex < 0) return marks
+  return [...marks.filter((_, i) => i !== currentIndex), marks[currentIndex]]
+})
+
+const stringNameFor = (string: number) => ['E', 'A', 'D', 'G'][string] ?? '?'
+
+const nextNote = computed(
+  () => steps.value.slice(Math.max(0, currentStep.value + 1)).find((step) => step.note)?.note,
+)
+// 下一音幽灵圈：下一个音和当前同位时手不用动，就不画，避免圈叠圈
+const ghostMark = computed<FretMark | null>(() => {
+  const note = nextNote.value
+  if (!note) return null
+  const current = steps.value[Math.max(0, currentStep.value)]?.note
+  if (current && current.string === note.string && current.fret === note.fret) return null
+  return { stringIndex: note.string, fret: note.fret, color: '#ff8a65', label: '下一音' }
+})
+const nextLabel = computed(() => {
+  const note = nextNote.value
+  return note ? `${stringNameFor(note.string)}弦 ${note.fret}品` : '本小节内无更多音'
 })
 
 const fretCount = computed(() => {
@@ -189,14 +246,55 @@ onMounted(() => {
       :description="exercise.description"
     >
       <template #links>
-        <div class="flex flex-wrap gap-2">
-          <UBadge :label="`${currentTimeSignature[0]}/${currentTimeSignature[1]}`" color="neutral" variant="subtle" />
-          <UBadge :label="`${bpm} BPM`" color="neutral" variant="subtle" />
-          <UBadge
-            :label="`第 ${currentMeasure + 1} / ${exercise.measures.length} 小节`"
-            color="neutral"
-            variant="subtle"
-          />
+        <div class="flex flex-col items-end gap-3">
+          <div class="flex flex-wrap justify-end gap-2">
+            <UBadge
+              :label="`${currentTimeSignature[0]}/${currentTimeSignature[1]}`"
+              color="neutral"
+              variant="subtle"
+            />
+            <UBadge :label="`${bpm} BPM`" color="neutral" variant="subtle" />
+            <UBadge
+              :label="`第 ${currentMeasure + 1} / ${exercise.measures.length} 小节`"
+              color="neutral"
+              variant="subtle"
+            />
+          </div>
+          <div class="flex flex-wrap items-center justify-end gap-2">
+            <UButton
+              label="上一小节"
+              variant="outline"
+              color="neutral"
+              :disabled="isPlaying || currentMeasure === 0"
+              @click="previousMeasure"
+            />
+            <UButton
+              :label="isPlaying ? '暂停练习' : '开始练习'"
+              :icon="isPlaying ? 'i-lucide-pause' : 'i-lucide-play'"
+              :disabled="isImporting"
+              :loading="isImporting"
+              @click="togglePractice"
+            />
+            <UButton
+              label="下一小节"
+              variant="outline"
+              color="neutral"
+              :disabled="isPlaying || currentMeasure >= exercise.measures.length - 1"
+              @click="nextMeasure"
+            />
+            <UButton
+              label="重置"
+              variant="outline"
+              color="neutral"
+              :disabled="isPlaying"
+              @click="resetPractice"
+            />
+            <div class="flex items-center gap-2 text-xs text-muted">
+              <span class="shrink-0">速度</span>
+              <USlider v-model="bpm" :min="40" :max="200" :step="1" class="w-24 sm:w-32" />
+              <strong class="w-8 shrink-0 text-highlighted">{{ bpm }}</strong>
+            </div>
+          </div>
         </div>
       </template>
     </UPageHeader>
@@ -223,21 +321,19 @@ onMounted(() => {
       />
     </div>
 
-    <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)]">
+    <div
+      class="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,1fr)]"
+      :class="{ 'lg:items-stretch': !!exercise.sourceFile }"
+    >
       <div class="flex flex-col gap-4">
         <!-- 节奏与 Tab 面板 -->
         <UCard>
           <template #header>
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div class="flex flex-col gap-1">
-                <span class="text-xs font-bold uppercase tracking-wider text-primary">节奏与 Bass Tab</span>
-                <h2 class="text-lg font-bold text-highlighted">跟着当前格练习</h2>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-muted">
-                <span class="shrink-0">速度</span>
-                <USlider v-model="bpm" :min="40" :max="140" :step="1" class="w-24 sm:w-32" />
-                <strong class="w-7 shrink-0 text-highlighted">{{ bpm }}</strong>
-              </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-bold uppercase tracking-wider text-primary"
+                >节奏与 Bass Tab</span
+              >
+              <h2 class="text-lg font-bold text-highlighted">跟着当前格练习</h2>
             </div>
           </template>
 
@@ -254,77 +350,74 @@ onMounted(() => {
           :total-measures="exercise.measures.length"
           :is-playing="isPlaying"
         />
-
-        <!-- 走带控制 -->
-        <UCard>
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex flex-col gap-0.5">
-              <span class="text-xs font-bold uppercase tracking-wider text-primary">当前动作</span>
-              <strong class="text-base text-highlighted">{{ currentInstruction.title }}</strong>
-              <span class="text-xs text-muted">{{ currentInstruction.detail }}</span>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <UButton
-                label="上一小节"
-                variant="outline"
-                color="neutral"
-                :disabled="isPlaying || currentMeasure === 0"
-                @click="previousMeasure"
-              />
-              <UButton
-                label="下一小节"
-                variant="outline"
-                color="neutral"
-                :disabled="isPlaying || currentMeasure >= exercise.measures.length - 1"
-                @click="nextMeasure"
-              />
-              <UButton
-                label="重置"
-                variant="outline"
-                color="neutral"
-                :disabled="isPlaying"
-                @click="resetPractice"
-              />
-              <UButton
-                :label="isPlaying ? '暂停练习' : '开始练习'"
-                :icon="isPlaying ? 'i-lucide-pause' : 'i-lucide-play'"
-                :disabled="isImporting"
-                :loading="isImporting"
-                @click="togglePractice"
-              />
-            </div>
-          </div>
-        </UCard>
-
-        <ScoreCorrespondence :steps="steps" :current-step="currentStep" />
-
-        <ScoreCoach :instruction="currentInstruction" :tip="exercise.tip" :is-playing="isPlaying" />
       </div>
 
-      <aside class="flex flex-col gap-4">
-        <UCard>
-          <template #header>
-            <div class="flex items-end justify-between gap-4">
-              <div class="flex flex-col gap-1">
-                <span class="text-xs font-bold uppercase tracking-wider text-primary">左手路线</span>
-                <h2 class="text-lg font-bold text-highlighted">指板定位</h2>
-              </div>
-              <span class="rounded-md bg-muted px-2.5 py-1.5 text-xs text-muted ring-1 ring-default">
-                {{ currentInstruction.position }}
-              </span>
+      <aside class="flex flex-col lg:min-h-0" :class="exercise.sourceFile ? 'min-h-[420px]' : ''">
+        <div
+          class="flex min-h-0 flex-1 flex-col rounded-lg border border-default bg-default p-4"
+          :class="{ 'lg:flex-none': !exercise.sourceFile }"
+        >
+          <div class="mb-3 flex items-end justify-between gap-4">
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-bold uppercase tracking-wider text-primary">指板</span>
+              <h2 class="text-lg font-bold text-highlighted">当前位置与下一音</h2>
             </div>
-          </template>
+            <span class="rounded-md bg-muted px-2.5 py-1.5 text-xs text-muted ring-1 ring-default">
+              {{ currentInstruction.position }}
+            </span>
+          </div>
 
-          <div class="[&_.bass-svg]:h-auto [&_.bass-svg]:max-w-full">
-            <BassFretboard
-              :highlights="highlights"
-              :fret-count="fretCount"
-              :initial-show-note-names="false"
-              :show-toggle="false"
-              muted
+          <BassFretboard
+            class="min-h-0 flex-1"
+            :highlights="highlights"
+            :ghost-mark="ghostMark"
+            :pulse-key="currentStep"
+            :fret-count="fretCount"
+            :fret-height="44"
+            :max-height="exercise.sourceFile ? 0 : 560"
+            :max-width="380"
+            auto-scroll
+            :drag-enabled="false"
+            :initial-show-note-names="false"
+            :show-toggle="false"
+            muted
+          >
+            <template #status>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="rounded bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
+                  右手 {{ currentInstruction.rightHand }}
+                </span>
+                <span class="rounded bg-muted px-2 py-1 text-xs font-bold text-highlighted">
+                  左手 {{ currentInstruction.leftHand }}
+                </span>
+                <span class="rounded bg-muted px-2 py-1 text-xs font-bold text-highlighted">
+                  {{ currentInstruction.note }}
+                </span>
+                <span class="rounded bg-muted px-2 py-1 text-xs text-muted">
+                  {{ currentInstruction.rhythm }}
+                </span>
+              </div>
+            </template>
+          </BassFretboard>
+
+          <div class="mt-3 flex flex-col gap-2">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
+              <span class="shrink-0 font-bold text-highlighted">下一音</span>
+              <strong class="text-highlighted">{{ nextLabel }}</strong>
+              <span class="text-dimmed"
+                >数字为按压品位，×N 为该位在小节内击打次数，高亮圈为当前音</span
+              >
+            </div>
+            <UAlert
+              v-if="exercise.tip"
+              icon="i-lucide-lightbulb"
+              color="warning"
+              variant="subtle"
+              title="练习重点"
+              :description="exercise.tip"
             />
           </div>
-        </UCard>
+        </div>
       </aside>
     </div>
   </section>

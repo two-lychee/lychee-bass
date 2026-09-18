@@ -21,6 +21,12 @@ export default defineConfig({
       },
     }),
   ],
+  // alphaTab 用 `new URL('./alphaTab.worker.mjs', import.meta.url)` 定位渲染 worker，
+  // 一旦被预构建打进 .vite/deps，worker 就会解析到不存在的 .vite/deps/alphaTab.worker.mjs，
+  // 渲染管线静默挂起（.at-surface 空壳、无报错）。必须保持原始 ESM 结构。
+  optimizeDeps: {
+    exclude: ['@coderline/alphatab'],
+  },
   server: {
     proxy: {
       '/api': 'http://localhost:3001',
