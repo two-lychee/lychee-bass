@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ScoreReadingGuide from '@/components/bass-simiulator/ScoreReadingGuide.vue'
+
 const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 const tunings = [
@@ -10,16 +12,16 @@ const tunings = [
 
 const intervals = [
   { name: '根音', semitones: 0, example: 'C' },
-  { name: '小二度', semitones: 1, example: 'C → C#' },
+  { name: '小二度', semitones: 1, example: 'C → D♭' },
   { name: '大二度', semitones: 2, example: 'C → D' },
-  { name: '小三度', semitones: 3, example: 'C → D#' },
+  { name: '小三度', semitones: 3, example: 'C → E♭' },
   { name: '大三度', semitones: 4, example: 'C → E' },
   { name: '纯四度', semitones: 5, example: 'C → F' },
-  { name: '减五度（蓝调音）', semitones: 6, example: 'C → F#' },
+  { name: '减五度（蓝调音）', semitones: 6, example: 'C → G♭' },
   { name: '纯五度', semitones: 7, example: 'C → G' },
-  { name: '小六度', semitones: 8, example: 'C → G#' },
+  { name: '小六度', semitones: 8, example: 'C → A♭' },
   { name: '大六度', semitones: 9, example: 'C → A' },
-  { name: '小七度', semitones: 10, example: 'C → A#' },
+  { name: '小七度', semitones: 10, example: 'C → B♭' },
   { name: '大七度', semitones: 11, example: 'C → B' },
   { name: '八度', semitones: 12, example: 'C → C' },
 ]
@@ -32,9 +34,16 @@ const intervalColumns = [
 
 const rhythmTips = [
   { title: '拍号', description: '如 4/4 表示每小节 4 拍，每拍为四分音符' },
-  { title: 'BPM', description: '每分钟拍数（Beats Per Minute），如 120 BPM' },
+  {
+    title: 'BPM',
+    description: '每分钟拍数。先看速度标记的拍单位：四分音符 = 120 时，一个四分音符为 0.5 秒。',
+  },
   { title: '节拍器', description: '帮助保持稳定节奏的工具' },
-  { title: '常见拍号', description: '4/4（最常见）、3/4（华尔兹）、6/8（进行曲）' },
+  {
+    title: '常见拍号',
+    description:
+      '4/4 常分四拍；3/4 常分三拍；6/8 通常按 3+3 个八分音符分成两大拍，每大拍为附点四分音符。',
+  },
 ]
 
 const bassRoles = [
@@ -54,7 +63,14 @@ const studyAdvice = [
 
 <template>
   <div class="flex flex-col gap-8">
-    <UPageHeader title="基础乐理" description="贝斯演奏必备的音乐理论知识" />
+    <UPageHeader
+      title="基础乐理与读谱"
+      description="从 TAB、五线谱和音符时值入门，把谱面一步步变成手上的演奏。"
+    />
+
+    <UCard>
+      <ScoreReadingGuide />
+    </UCard>
 
     <UPageSection
       title="贝斯调弦"
@@ -70,9 +86,7 @@ const studyAdvice = [
           </div>
         </UCard>
       </div>
-      <p class="mt-3 text-sm italic text-dimmed">
-        贝斯比吉他低一个八度，相邻弦之间为纯四度关系。
-      </p>
+      <p class="mt-3 text-sm italic text-dimmed">贝斯比吉他低一个八度，相邻弦之间为纯四度关系。</p>
     </UPageSection>
 
     <UPageSection
@@ -90,7 +104,9 @@ const studyAdvice = [
         />
       </div>
       <ul class="mt-4 flex flex-col gap-2 text-sm text-muted">
-        <li><strong class="text-highlighted">半音</strong>：相邻两个音之间的最小距离（如 C → C#）</li>
+        <li>
+          <strong class="text-highlighted">半音</strong>：相邻两个音之间的最小距离（如 C → C#）
+        </li>
         <li><strong class="text-highlighted">全音</strong>：两个半音的距离（如 C → D）</li>
         <li>E → F 和 B → C 之间只有半音，没有黑键</li>
       </ul>
@@ -100,21 +116,28 @@ const studyAdvice = [
       <div class="flex flex-col gap-4">
         <div>
           <h3 class="mb-1 font-semibold text-highlighted">大调音阶（Major Scale）</h3>
-          <p class="text-sm text-muted">音程结构：<code class="font-mono text-primary">全 - 全 - 半 - 全 - 全 - 全 - 半</code></p>
+          <p class="text-sm text-muted">
+            音程结构：<code class="font-mono text-primary">全 - 全 - 半 - 全 - 全 - 全 - 半</code>
+          </p>
           <p class="mt-1 rounded-md border-s-2 border-primary bg-muted px-3 py-2 font-mono text-sm">
             例：C 大调 = C D E F G A B C
           </p>
         </div>
         <div>
           <h3 class="mb-1 font-semibold text-highlighted">自然小调音阶（Natural Minor Scale）</h3>
-          <p class="text-sm text-muted">音程结构：<code class="font-mono text-primary">全 - 半 - 全 - 全 - 半 - 全 - 全</code></p>
+          <p class="text-sm text-muted">
+            音程结构：<code class="font-mono text-primary">全 - 半 - 全 - 全 - 半 - 全 - 全</code>
+          </p>
           <p class="mt-1 rounded-md border-s-2 border-primary bg-muted px-3 py-2 font-mono text-sm">
             例：A 小调 = A B C D E F G A
           </p>
         </div>
         <div>
           <h3 class="mb-1 font-semibold text-highlighted">五声音阶（Pentatonic Scale）</h3>
-          <p class="text-sm text-muted"><strong class="text-highlighted">小调五声</strong>最常用于蓝调和摇滚，只有 5 个音，容易即兴。</p>
+          <p class="text-sm text-muted">
+            <strong class="text-highlighted">小调五声</strong>最常用于蓝调和摇滚，只有 5
+            个音，容易即兴。
+          </p>
           <p class="mt-1 rounded-md border-s-2 border-primary bg-muted px-3 py-2 font-mono text-sm">
             例：A 小调五声 = A C D E G
           </p>
@@ -123,7 +146,7 @@ const studyAdvice = [
           <h3 class="mb-1 font-semibold text-highlighted">布鲁斯音阶（Blues Scale）</h3>
           <p class="text-sm text-muted">在小调五声基础上加入"蓝调音"（b5）。</p>
           <p class="mt-1 rounded-md border-s-2 border-primary bg-muted px-3 py-2 font-mono text-sm">
-            例：A 布鲁斯 = A C D D# E G
+            例：A 布鲁斯 = A C D E♭ E G（E♭ 是降五级，与 D♯ 在十二平均律中等音）
           </p>
         </div>
       </div>
@@ -132,7 +155,7 @@ const studyAdvice = [
     <UPageSection
       title="音程"
       icon="i-lucide-ruler"
-      description="两个音之间的距离称为音程，以半音数计算："
+      description="音程先由字母跨度确定度数，再由半音数确定性质。例如 C→E♭ 是小三度；C→D♯ 虽然同为 3 个半音，拼写上却是增二度。"
     >
       <UTable :data="intervals" :columns="intervalColumns" />
     </UPageSection>

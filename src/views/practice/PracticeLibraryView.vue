@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import ScoreReadingHelp from '@/components/bass-simiulator/ScoreReadingHelp.vue'
 
 type MessageColor = 'success' | 'warning' | 'error'
 
@@ -48,7 +49,10 @@ const loadStoredScores = async () => {
       scores.map(async (score) => {
         const tracksResponse = await fetch(`/api/scores/${encodeURIComponent(score.id)}/tracks`)
         if (!tracksResponse.ok) return { ...score, tracks: [] }
-        const details = (await tracksResponse.json()) as { selectedTrackIndex: number; tracks: ScoreTrack[] }
+        const details = (await tracksResponse.json()) as {
+          selectedTrackIndex: number
+          tracks: ScoreTrack[]
+        }
         return { ...score, trackIndex: details.selectedTrackIndex, tracks: details.tracks }
       }),
     )
@@ -70,10 +74,15 @@ const changeTrack = async (score: StoredScore, trackIndex: number) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ trackIndex }),
     })
-    const result = (await response.json()) as { trackName?: string; warning?: string; message?: string }
+    const result = (await response.json()) as {
+      trackName?: string
+      warning?: string
+      message?: string
+    }
     if (!response.ok) throw new Error(result.message || '轨道切换失败')
     score.trackIndex = trackIndex
-    score.trackName = result.trackName || score.tracks.find((track) => track.index === trackIndex)?.name || 'Track'
+    score.trackName =
+      result.trackName || score.tracks.find((track) => track.index === trackIndex)?.name || 'Track'
     libraryMessage.value = result.warning || `已切换到轨道：${score.trackName}`
     libraryColor.value = result.warning ? 'warning' : 'success'
   } catch (error) {
@@ -171,6 +180,7 @@ onMounted(() => void loadStoredScores())
 
 <template>
   <section class="flex flex-col gap-5">
+    <ScoreReadingHelp />
     <UCard>
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div class="flex flex-col gap-2">
@@ -282,7 +292,12 @@ onMounted(() => void loadStoredScores())
             <h2 class="text-xl font-bold text-highlighted">选择今天的练习</h2>
             <p class="text-sm text-muted">先选择一个目标，进入练习后只关注当前拍和当前动作。</p>
           </div>
-          <UBadge :label="`${exerciseCount} 个练习`" color="primary" variant="subtle" class="shrink-0" />
+          <UBadge
+            :label="`${exerciseCount} 个练习`"
+            color="primary"
+            variant="subtle"
+            class="shrink-0"
+          />
         </div>
       </template>
 
