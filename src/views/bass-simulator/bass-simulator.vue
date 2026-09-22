@@ -12,9 +12,7 @@ const showSettings = ref(false)
 const selectedTuningId = ref(TUNINGS.standard4.id)
 const showNoteNames = ref(false)
 
-const selectedTuning = computed(
-  () => TUNINGS[selectedTuningId.value] ?? TUNINGS.standard4,
-)
+const selectedTuning = computed(() => TUNINGS[selectedTuningId.value] ?? TUNINGS.standard4)
 
 const tabsItems = [
   { label: '自由演奏', value: 'free' as Mode, icon: 'i-lucide-guitar' },
@@ -27,6 +25,13 @@ const tuningItems = Object.values(TUNINGS)
 
 <template>
   <div class="flex flex-col gap-4">
+    <header class="training-intro">
+      <div>
+        <p class="eyebrow">辅助工具 / TOOLS</p>
+        <h1>随手查，随手试。</h1>
+        <p class="intro-copy">查看指板、巩固音名，或探索音阶中的位置关系。</p>
+      </div>
+    </header>
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
       <UTabs v-model="mode" :items="tabsItems" :content="false" class="flex-1" />
 

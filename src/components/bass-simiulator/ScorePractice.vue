@@ -262,6 +262,12 @@ onMounted(() => {
           </div>
           <div class="flex flex-wrap items-center justify-end gap-2">
             <UButton
+              label="返回曲谱"
+              to="/practice/library"
+              variant="ghost"
+              color="neutral"
+            />
+            <UButton
               label="上一小节"
               variant="outline"
               color="neutral"

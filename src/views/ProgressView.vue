@@ -1,73 +1,52 @@
-<script setup lang="ts">
-import { computed, ref } from 'vue'
-
-interface ProgressRecord {
-  date: string
-  activity: string
-  duration: number // 分钟
-}
-
-// 模拟数据，后续可接入 LocalStorage 或后端
-const records = ref<ProgressRecord[]>([
-  { date: '2026-06-14', activity: '音名训练', duration: 15 },
-  { date: '2026-06-14', activity: '音阶探索', duration: 20 },
-  { date: '2026-06-13', activity: '自由演奏', duration: 30 },
-  { date: '2026-06-12', activity: '音名训练', duration: 10 },
-])
-
-const totalMinutes = computed(() => records.value.reduce((sum, r) => sum + r.duration, 0))
-const totalSessions = computed(() => records.value.length)
-const avgMinutes = computed(() =>
-  totalSessions.value > 0 ? Math.round(totalMinutes.value / totalSessions.value) : 0,
+﻿<script setup lang="ts">
+import { computed } from 'vue'
+import { usePracticeHistory } from '@/composables/usePracticeHistory'
+import { foundationExercises } from '@/music/foundation-exercises'
+const { records, storageError } = usePracticeHistory()
+const totalMinutes = computed(() =>
+  Math.round(records.value.reduce((sum, r) => sum + r.seconds, 0) / 60),
 )
-
-const columns = [
-  { accessorKey: 'date', header: '日期' },
-  { accessorKey: 'activity', header: '活动' },
-  {
-    accessorKey: 'duration',
-    header: '时长',
-    cell: ({ row }: { row: { original: ProgressRecord } }) =>
-      `${row.original.duration} 分钟`,
-  },
-]
-
-const stats = computed(() => [
-  { value: totalMinutes.value, label: '总练习时长（分钟）' },
-  { value: totalSessions.value, label: '练习次数' },
-  { value: avgMinutes.value, label: '平均时长（分钟）' },
-])
+const titleFor = (id: string) => foundationExercises.find((e) => e.id === id)?.title ?? id
+const dateLabel = (date: string) =>
+  new Date(date).toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 </script>
-
 <template>
-  <div class="flex flex-col gap-8">
-    <UPageHeader title="学习进度" description="记录你的练习轨迹" />
-
-    <UPageGrid>
-      <UPageCard v-for="stat in stats" :key="stat.label">
-        <div class="flex flex-col items-center gap-2 py-2 text-center">
-          <span class="text-4xl font-bold text-primary">{{ stat.value }}</span>
-          <span class="text-sm text-muted">{{ stat.label }}</span>
-        </div>
-      </UPageCard>
-    </UPageGrid>
-
-    <UPageSection title="练习记录">
-      <UTable v-if="records.length > 0" :data="records" :columns="columns" />
-      <UEmpty
-        v-else
-        icon="i-lucide-music"
-        title="暂无记录"
-        description="快去练习吧！"
-      />
-    </UPageSection>
-
-    <UAlert
-      icon="i-lucide-lightbulb"
-      color="primary"
-      variant="subtle"
-      title="提示"
-      description="后续将支持自动记录练习时长和成绩曲线"
-    />
-  </div>
+  <section>
+    <header class="training-intro">
+      <div>
+        <p class="eyebrow">练习记录 / PRACTICE LOG</p>
+        <h1>每一次，都算数。</h1>
+        <p class="intro-copy">保存最近 200 次基础训练，在上次的速度继续。</p>
+      </div>
+      <div class="intro-note">
+        <strong>{{ totalMinutes }} 分钟</strong
+        ><span>{{ records.length }} 次练习 · 此浏览器本地记录</span>
+      </div>
+    </header>
+    <p v-if="storageError" class="inline-message" role="alert">{{ storageError }}</p>
+    <div v-if="!records.length" class="empty-state">
+      <h2>还没有练习记录。</h2>
+      <p>完成一项基础训练后，时长、速度和自评会出现在这里。</p>
+      <RouterLink class="action-button primary" to="/">选择第一项练习 →</RouterLink>
+    </div>
+    <div v-else class="history-list">
+      <RouterLink
+        v-for="record in records"
+        :key="record.id"
+        class="history-row"
+        :to="`/practice/training/${record.exerciseId}`"
+        ><time :datetime="record.date">{{ dateLabel(record.date) }}</time
+        ><strong>{{ titleFor(record.exerciseId) }}</strong
+        ><span>{{ record.bpm }} BPM</span
+        ><span>{{ Math.floor(record.seconds / 60) }}分{{ record.seconds % 60 }}秒</span
+        ><span>{{ record.rating ?? '未自评' }}</span
+        ><span aria-hidden="true">↗</span></RouterLink
+      >
+    </div>
+  </section>
 </template>

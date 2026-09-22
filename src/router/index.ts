@@ -6,6 +6,11 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
+      component: () => import('../views/practice/PracticeFoundationView.vue'),
+    },
+    {
+      path: '/tools',
+      name: 'tools',
       component: () => import('../views/bass-simulator/bass-simulator.vue'),
     },
     {
@@ -16,7 +21,7 @@ const router = createRouter({
     {
       path: '/about',
       name: 'about',
-      component: () => import('../views/AboutView.vue'),
+      redirect: { name: 'home' },
     },
     {
       path: '/theory',
@@ -27,8 +32,13 @@ const router = createRouter({
       path: '/practice',
       name: 'practice',
       component: () => import('../views/PracticeView.vue'),
-      redirect: { name: 'practice-lesson' },
+      redirect: { name: 'home' },
       children: [
+        {
+          path: 'training/:exerciseId',
+          name: 'practice-training',
+          component: () => import('../views/practice/PracticeTrainingView.vue'),
+        },
         {
           path: 'library',
           name: 'practice-library',

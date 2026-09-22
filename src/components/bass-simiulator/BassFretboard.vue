@@ -17,6 +17,7 @@
         ref="svgEl"
         :viewBox="`0 0 ${svgWidth} ${svgHeight}`"
         class="bass-svg"
+        :style="{ touchAction: dragEnabled ? 'none' : 'pan-y' }"
         v-on="dragEnabled ? dragHandlers : {}"
         @click="unlockAudio"
       >

@@ -1,46 +1,36 @@
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-
-const navItems = [
-  { label: '学习', icon: 'i-lucide-music', to: '/' },
-  { label: '练习', icon: 'i-lucide-presentation', to: '/practice' },
-  { label: '乐理', icon: 'i-lucide-book-open', to: '/theory' },
-  { label: '进度', icon: 'i-lucide-chart-no-axes-column', to: '/progress' },
-  { label: '关于', icon: 'i-lucide-info', to: '/about' },
-]
-
-// 练习页需要宽屏（指板/谱面），取消容器最大宽度限制
-const isWide = computed(() => route.path.startsWith('/practice'))
-</script>
-
-<template>
-  <div class="flex min-h-screen flex-col bg-default text-default">
-    <UHeader>
-      <template #left>
-        <router-link to="/" class="flex items-center gap-2 text-xl font-bold text-highlighted">
-          <UIcon name="i-lucide-guitar" class="size-6 shrink-0 text-primary" />
-          <span>Lychee Bass</span>
-        </router-link>
-      </template>
-
-      <UNavigationMenu :items="navItems" />
-
-      <template #right>
-        <UColorModeButton />
-      </template>
-
-      <template #body>
-        <UNavigationMenu :items="navItems" orientation="vertical" class="w-full" />
-      </template>
-    </UHeader>
-
-    <main class="w-full flex-1 py-6 sm:py-8">
-      <UContainer :class="{ '[--ui-container:none]': isWide }">
-        <slot />
-      </UContainer>
-    </main>
+﻿<template>
+  <div class="app-shell">
+    <header class="site-header">
+      <RouterLink to="/" class="wordmark" aria-label="Lychee Bass 首页"
+        ><span class="brand-mark" aria-hidden="true">╱╱</span> LYCHEE<span class="wordmark-light"
+          >BASS</span
+        ></RouterLink
+      >
+      <nav class="main-nav" aria-label="主导航">
+        <RouterLink
+          to="/"
+          :class="{ 'nav-active': $route.path === '/' || $route.name === 'practice-training' }"
+          >基础训练</RouterLink
+        >
+        <RouterLink
+          to="/practice/library"
+          :class="{
+            'nav-active': ['practice-library', 'practice-lesson'].includes(String($route.name)),
+          }"
+          >曲谱练习</RouterLink
+        >
+        <RouterLink to="/progress" active-class="nav-active">练习记录</RouterLink>
+      </nav>
+      <UColorModeButton class="theme-toggle" />
+    </header>
+    <main class="site-content"><slot /></main>
+    <footer class="site-footer">
+      <span>LYCHEE BASS <span class="footer-divider">/</span> 拿起琴，慢慢来。</span>
+      <nav aria-label="辅助导航">
+        <RouterLink to="/tools">辅助工具</RouterLink
+        ><RouterLink to="/practice/metronome">节拍器</RouterLink
+        ><RouterLink to="/theory">读谱与乐理</RouterLink>
+      </nav>
+    </footer>
   </div>
 </template>

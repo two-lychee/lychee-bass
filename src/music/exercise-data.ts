@@ -1,6 +1,6 @@
 // 内置练习曲目的数据与类型定义，与渲染/播放逻辑解耦
 
-export type RightHand = '↓' | '↑' | '×' | '-'
+export type RightHand = '↓' | '↑' | '×' | '-' | 'i' | 'm'
 export type NoteEvent = { string: number; fret: number; finger: 1 | 2 | 3 | 4 }
 export type ExerciseStep = {
   beat: number
@@ -20,11 +20,13 @@ export type Exercise = {
   timeSignature: [number, number]
   measureSignatures?: Array<[number, number]>
   measures: ExerciseStep[][]
-  subdivisionsPerBeat: 2 | 4
+  subdivisionsPerBeat: 1 | 2 | 4
   sourceFile?: string
 }
 
-export const makeSteps = (pattern: Array<{ rightHand: RightHand; note?: NoteEvent; rest?: boolean }>) =>
+export const makeSteps = (
+  pattern: Array<{ rightHand: RightHand; note?: NoteEvent; rest?: boolean }>,
+) =>
   pattern.map((item, index) => ({
     ...item,
     beat: Math.floor(index / 2),

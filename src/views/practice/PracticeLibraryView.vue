@@ -133,33 +133,12 @@ const trackItems = (score: StoredScore) =>
 
 const exercises = [
   {
-    id: 'eighth-alternating',
-    level: '入门 01',
-    title: '八分音符交替拨弦',
-    description: '建立稳定的正拍与反拍，练习左右手同步。',
-    focus: '↓ ↑ 交替拨弦',
-  },
-  {
-    id: 'offbeat-groove',
-    level: '入门 02',
-    title: '反拍律动',
-    description: '正拍保持动作，反拍发音，感受节奏留白。',
-    focus: '反拍 + 休止',
-  },
-  {
-    id: 'syncopation',
-    level: '入门 03',
-    title: '切分与闷音',
-    description: '练习切分重音和闷音连接，让律动更有方向。',
-    focus: '切分 + 闷音',
-  },
-  {
     id: 'shoot-the-moon-gp4',
     level: 'GP4 导入',
     title: 'Shoot the Moon',
     artist: 'Norah Jones',
-    description: '从 Guitar Pro 4 原谱读取，当前以第一小节演示 Bass 低八度适配。',
-    focus: '真实谱曲 + 原始吉他数据保留',
+    description: '原曲吉他轨道映射到贝斯音域，可分小节练习。',
+    focus: '曲目应用',
     sourceFile: '/file/Jones, Norah - Shoot The Moon.gp4',
   },
   {
@@ -167,8 +146,8 @@ const exercises = [
     level: 'Bass GP4',
     title: 'Wickerman',
     artist: 'Iron Maiden',
-    description: 'Steve Harris Bass 轨道，四弦标准调弦，当前从第 3 小节开始练习。',
-    focus: '真实 Bass 弦位 + 八分音符推进',
+    description: 'Steve Harris 贝斯轨道，四弦标准调弦。',
+    focus: '八分音符推进',
     sourceFile: '/file/Iron Maiden - Wickerman (Bass).gp4',
   },
 ]
@@ -179,7 +158,14 @@ onMounted(() => void loadStoredScores())
 </script>
 
 <template>
-  <section class="flex flex-col gap-5">
+  <section class="score-library flex flex-col gap-5">
+    <header class="training-intro">
+      <div>
+        <p class="eyebrow">曲谱练习 / REPERTOIRE</p>
+        <h1>把基础，放进音乐里。</h1>
+        <p class="intro-copy">选择示例曲目，或导入自己的 Guitar Pro 曲谱。</p>
+      </div>
+    </header>
     <ScoreReadingHelp />
     <UCard>
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -288,9 +274,9 @@ onMounted(() => void loadStoredScores())
       <template #header>
         <div class="flex items-end justify-between gap-4">
           <div class="flex flex-col gap-1">
-            <p class="text-xs font-bold uppercase tracking-wider text-primary">练习库</p>
-            <h2 class="text-xl font-bold text-highlighted">选择今天的练习</h2>
-            <p class="text-sm text-muted">先选择一个目标，进入练习后只关注当前拍和当前动作。</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-primary">示例曲目</p>
+            <h2 class="text-xl font-bold text-highlighted">从完整曲目中练习</h2>
+            <p class="text-sm text-muted">需要节奏或指法训练？从首页的基础训练开始。</p>
           </div>
           <UBadge
             :label="`${exerciseCount} 个练习`"
